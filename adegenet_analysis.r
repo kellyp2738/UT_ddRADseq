@@ -81,7 +81,6 @@ tiplabels(pch=16, col=indv.colors[host.indv])
 # the clustering function works best if you give it
 # the pre-calculated PCA
 # there doesn't seem to be any strong support for clustering
-# delta(BIC) from 1 to 2 clusters = +3 (1 cluster = better)
 tick.clusters<-find.clusters(tick.snps, glPca=pca.ticks)
 tick.clusters.2<-find.clusters(tick.snps, 
                                max.n.clust=length(unique(host.indv)),
