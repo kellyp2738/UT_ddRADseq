@@ -35,3 +35,8 @@ keep.subset(full.data, 4)
 
 # separate Harrison Bayou north and south
 keep.subset(subset(full.data, coll.site=='HB'), 8)
+
+# separate HB raccoon and opossum hosts
+site.sp<-paste(full.data$host.species, full.data$coll.site, sep='_')
+full.data.update<-cbind(full.data, site.sp)
+keep.subset(full.data.update, 10)
