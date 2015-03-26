@@ -27,7 +27,7 @@ source('~/BayeScan2.1/R functions/plot_R.r')
 #pop.2<-read.table('~/Dropbox/ddRADseq/pseudoref_raccoon_counts_maf0.1_minmeanDP20_minGQ25_maxmissing0.75.frq.count', skip=1)
 #names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 
-# - D. variabilis pseudoreference mapped SNPs found in at least 75% of individuals 
+# - D. variabilis pseudoreference mapped SNPs found in at least 75% of individuals THIS IS THE DISSERTATION DATASET
 # - (filtered at whole population level first)
 #pop.1<-read.table('~/Dropbox/ddRADseq/pseudoref_opossum_counts_pop_filtered_maxmissing0.75.frq.count', skip=1)
 #names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
@@ -146,8 +146,40 @@ bs2.keep$X1<-seq(1,length(bs2.keep[,1]),1)
 write.table(bs1.keep, file='~/Dropbox/ddRADseq/pseudoref_pop_filtered_maxmissing0.75_opossums_NotMissing_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
 write.table(bs2.keep, file='~/Dropbox/ddRADseq/pseudoref_pop_filtered_maxmissing0.75_raccoons_NotMissing_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
 
+## Analysis 3/2015
 
-## most updated Bayescan output 21/Aug/2014
+pd<-read.table('/Users/kelly/Dropbox/ddRADseq/Updated_Outlier_Analysis/Bayescan_Input_UpdatedPseudoref_HB_Only_fst.txt')
+plot(pd$qval, pd$fst)
+plot(pd$qval, pd$alpha)
+mean(pd$fst)
+
+pd[which(pd$qval==min(pd$qval)),] #2487
+
+bs1.keep[2487,] #2487 in the parsed haplotype dataframe
+full.pop.parsed[2487,] #catalog locus 9212
+cl.9212<-subset(full.pop.parsed, pos=="9212_pseudoreference_pe_concatenated_without_rev_complement")
+cl.9212 #4 snps in this fragment
+# on Stampede, get the sequence:
+# grep -C 3 '9212' /work/02540/kellypie/D_variabilis_Pseudoref/D_variabilis_denovo_psuedoreference.fa
+# -C gives the lines around the match, which returns waaayyy too much data. scroll to the top; that's where this fragment is found
+
+#seq<-c(ATGCAATTAT TTCTGAAGTT ATTAAAGCTG GCTGTCTTCT AGACCACAAC ATTGCCGGTA ATGAAAGTTC ACAACAATGC AGGATACCAC CAACTAATTC 
+#       AAATCAAGTA AAGATACTTA AGTGACTGTT AGTTTTTTAT CTCTTAAGCA TGAGAACTCT TCCACTCGGC CCTGTTTCAT TACCACGGTG CGGTGC
+
+par(mfrow=c(1,1), mar=c(5,7,4,2))
+plot(pd$qval, pd$fst, pch=16, col='gray', cex=1.5, cex.axis=1.5, xlim=c(0,1), ylim=c(0,0.07),
+     bty='n', las=1, xlab='q-value', ylab="", cex.lab=1.5)
+abline(v=0.05)
+points(x=subset(pd, qval==min(pd$qval))$qval,
+       y=subset(pd, qval==min(pd$qval))$fst,
+       col=c('#74a9cf'), pch=16, cex=1.5)
+mtext(text='Fst', side=2, line=4.3, cex=1.5)
+legend(x='topright', legend=c('Significant, q<0.05', 'Significant, q<0.1'), pch=16,
+       border=NA, col=c('#74a9cf', '#d95f0e'), bty='n', cex=1)
+
+
+################################################################################################################################
+## Old Analysis Bayescan output 21/Aug/2014 (Dissertation)
 
 # Outlier loci, genotypes, and position in the Stacks catalog
 pd<-read.table('/Users/kellypierce/Dropbox/ddRADseq/D_variabilis_Pseudoref/Bayescan_Input_pseudoref_pop_filtered_maxmissing0.75_opossums_NotMis_fst.txt')
