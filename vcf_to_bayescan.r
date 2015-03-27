@@ -5,7 +5,8 @@
 library(stringr)
 library(plyr)
 library(magicaxis)
-source('~/BayeScan2.1/R functions/plot_R.r')
+library(gplots)
+#source('~/BayeScan2.1/R functions/plot_R.r') # not installed locally
 
 ## NOTE: number of columns may need adjustment if re-running
 
@@ -148,7 +149,7 @@ write.table(bs2.keep, file='~/Dropbox/ddRADseq/pseudoref_pop_filtered_maxmissing
 
 ## Analysis 3/2015
 
-pd<-read.table('/Users/kelly/Dropbox/ddRADseq/Updated_Outlier_Analysis/Bayescan_Input_UpdatedPseudoref_HB_Only_fst.txt')
+pd<-read.table('~/Dropbox/ddRADseq/Updated_Outlier_Analysis/Bayescan_Input_UpdatedPseudoref_HB_Only_fst.txt')
 plot(pd$qval, pd$fst)
 plot(pd$qval, pd$alpha)
 mean(pd$fst)
@@ -166,16 +167,49 @@ cl.9212 #4 snps in this fragment
 #seq<-c(ATGCAATTAT TTCTGAAGTT ATTAAAGCTG GCTGTCTTCT AGACCACAAC ATTGCCGGTA ATGAAAGTTC ACAACAATGC AGGATACCAC CAACTAATTC 
 #       AAATCAAGTA AAGATACTTA AGTGACTGTT AGTTTTTTAT CTCTTAAGCA TGAGAACTCT TCCACTCGGC CCTGTTTCAT TACCACGGTG CGGTGC
 
+#png(file='~/Dropbox/ddRADseq/D_variabilis_Pseudoref/Bayescan_Update_HB_Only_OutlierFst.png', height=10, width=15, unit='cm', res=300)
+pdf(file='~/Dropbox/ddRADseq/D_variabilis_Pseudoref/Bayescan_Update_HB_Only_OutlierFst.pdf', height=c(10/2.54), width=c(15/2.54))
 par(mfrow=c(1,1), mar=c(5,7,4,2))
 plot(pd$qval, pd$fst, pch=16, col='gray', cex=1.5, cex.axis=1.5, xlim=c(0,1), ylim=c(0,0.07),
      bty='n', las=1, xlab='q-value', ylab="", cex.lab=1.5)
-abline(v=0.05)
+#abline(v=0.05)
 points(x=subset(pd, qval==min(pd$qval))$qval,
        y=subset(pd, qval==min(pd$qval))$fst,
        col=c('#74a9cf'), pch=16, cex=1.5)
 mtext(text='Fst', side=2, line=4.3, cex=1.5)
-legend(x='topright', legend=c('Significant, q<0.05', 'Significant, q<0.1'), pch=16,
-       border=NA, col=c('#74a9cf', '#d95f0e'), bty='n', cex=1)
+legend(x=0.005, y=0.069, legend=c('q=0.007', expression('F'['ST']==0.06)), pch=16, border=NA, col=c('white'), bty='n', cex=1)
+dev.off()
+
+# make outlier locus allele frequency barplots
+outlier<-matrix(c(1,0,56/84,28/84), nrow=2, ncol=2) #Fst=0.06
+# confidence intervals for proportions live here... some lines have been commented out to make this work
+source('~/Dropbox/2014&Older/ModelFitting/R Scripts/PlotPrevCI.r')
+CI.op.T<-KL.CI(1, 46, 46, data=NA)
+CI.racc.T<-KL.CI(56/84, 56, 84, data=NA)
+
+
+#png(file='~/Dropbox/ddRADseq/D_variabilis_Pseudoref/OutlierLocus_PopFiltered_BlackBG.png', height=10, width=15, unit='cm', res=300)
+par(bg="black", col.axis="white",col.lab="white", col.main="white", col.sub="white", fg="white")
+par(mfrow=c(1,1), mar=c(5,6,2,4))
+barplot(as.matrix(outlier), col=c('#74a9cf', '#bdc9e1'),
+        xlim=c(0.2,2.7), width=0.8, border=NA,
+        cex.axis=1.5, cex.names=1.5, cex.lab=1.5, las=1)
+
+lines(x=c(0.55, 0.55), y=c(CI.op.T[2], CI.op.T[3]), lwd=3)
+lines(x=c(0.5, 0.6), y=rep(CI.op.T[2],2), lwd=3)
+lines(x=c(0.5, 0.6), y=rep(CI.op.T[3],2), lwd=3)
+
+lines(x=c(1.53, 1.53), y=c(CI.racc.T[2], CI.racc.T[3]), lwd=3)
+lines(x=c(1.48, 1.58), y=rep(CI.racc.T[2],2), lwd=3)
+lines(x=c(1.48, 1.58), y=rep(CI.racc.T[3],2), lwd=3)
+
+mtext(text=c('Allele Frequency'), side=2, line=4, cex=1.5)
+mtext(text=c('Opossum\nTicks', 'Raccoon\nTicks'), side=1, line=3, 
+      at=c(0.55,1.54), cex=1.5)
+legend(x='topright', legend=c('T', 'G'), border=NA,
+       fill=c('#74a9cf', '#bdc9e1'), bty='n', cex=1.5)
+#dev.off()
+
 
 
 ################################################################################################################################
