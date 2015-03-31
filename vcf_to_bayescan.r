@@ -37,8 +37,19 @@ library(gplots)
 
 ## Update 3/2015 (yes, I'm still working on this months after graduation. don't judge me)
 
-pop.1<-read.table('~/Desktop/UT_ddRADseq/Updated_pseudoref_counts_maxmissing_0.75_minmeanDP20_minGQ25_opHB_maf0.1_COUNTS.frq.count', skip=1)
-pop.2<-read.table('~/Desktop/UT_ddRADseq/Updated_pseudoref_counts_maxmissing_0.75_minmeanDP20_minGQ25_raccHB_maf0.1_COUNTS.frq.count', skip=1)
+#pop.1<-read.table('~/Desktop/UT_ddRADseq/Updated_pseudoref_counts_maxmissing_0.75_minmeanDP20_minGQ25_opHB_maf0.1_COUNTS.frq.count', skip=1)
+#pop.2<-read.table('~/Desktop/UT_ddRADseq/Updated_pseudoref_counts_maxmissing_0.75_minmeanDP20_minGQ25_raccHB_maf0.1_COUNTS.frq.count', skip=1)
+#names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
+#names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
+
+# these are also filtered to 75% maxmissing, but that didn't make it into the file name
+#pop.1<-read.table('~/Desktop/UT_ddRADseq/Hierarchical_Merged_Pseudoref_minmeanDP20_minGQ25_maf0.05_all_op_COUNTS.frq.count', skip=1)
+#pop.2<-read.table('~/Desktop/UT_ddRADseq/Hierarchical_Merged_Pseudoref_minmeanDP20_minGQ25_maf0.05_all_racc_COUNTS.frq.count', skip=1)
+#names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
+#names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
+
+pop.1<-read.table('~/Desktop/UT_ddRADseq/Op_PopFiltered_HB_COUNTS.frq.count', skip=1)
+pop.2<-read.table('~/Desktop/UT_ddRADseq/Racc_PopFiltered_HB_COUNTS.frq.count', skip=1)
 names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 
@@ -144,22 +155,30 @@ bs2.keep$X1<-seq(1,length(bs2.keep[,1]),1)
 #write.table(bs1.keep, file='~/Dropbox/ddRADseq/pseudoref_maf0.1_minmeanDP20_minGQ25_maxmissing0.75_opossums_NotMissing_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
 #write.table(bs2.keep, file='~/Dropbox/ddRADseq/pseudoref_maf0.1_minmeanDP20_minGQ25_maxmissing0.75_raccoons_NotMissing_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
 
-write.table(bs1.keep, file='~/Dropbox/ddRADseq/pseudoref_pop_filtered_maxmissing0.75_opossums_NotMissing_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
-write.table(bs2.keep, file='~/Dropbox/ddRADseq/pseudoref_pop_filtered_maxmissing0.75_raccoons_NotMissing_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
+write.table(bs1.keep, file='~/Dropbox/ddRADseq/PopFiltered_Merged_opossum_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
+write.table(bs2.keep, file='~/Dropbox/ddRADseq/PopFiltered_Merged_raccoon_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
 
 ## Analysis 3/2015
 
-pd<-read.table('~/Dropbox/ddRADseq/Updated_Outlier_Analysis/Bayescan_Input_UpdatedPseudoref_HB_Only_fst.txt')
+##########################
+#This one is all site/species combos, but filtered hierarchically
+pd<-read.table('~/Dropbox/ddRADseq/Hierarchical_Merged_Bayescan_Input_fst.txt')
 plot(pd$qval, pd$fst)
-plot(pd$qval, pd$alpha)
-mean(pd$fst)
 
-pd[which(pd$qval==min(pd$qval)),] #2487
+##########################
+#So this all is HB only, where the filtering was done on HB vs. SRT... not exactly what I want in the end...
 
-bs1.keep[2487,] #2487 in the parsed haplotype dataframe
-full.pop.parsed[2487,] #catalog locus 9212
-cl.9212<-subset(full.pop.parsed, pos=="9212_pseudoreference_pe_concatenated_without_rev_complement")
-cl.9212 #4 snps in this fragment
+#pd<-read.table('~/Dropbox/ddRADseq/Updated_Outlier_Analysis/Bayescan_Input_UpdatedPseudoref_HB_Only_fst.txt')
+#plot(pd$qval, pd$fst)
+#plot(pd$qval, pd$alpha)
+#mean(pd$fst)
+
+#pd[which(pd$qval==min(pd$qval)),] #2487
+
+#bs1.keep[2487,] #2487 in the parsed haplotype dataframe
+#full.pop.parsed[2487,] #catalog locus 9212
+#cl.9212<-subset(full.pop.parsed, pos=="9212_pseudoreference_pe_concatenated_without_rev_complement")
+#cl.9212 #4 snps in this fragment
 # on Stampede, get the sequence:
 # grep -C 3 '9212' /work/02540/kellypie/D_variabilis_Pseudoref/D_variabilis_denovo_psuedoreference.fa
 # -C gives the lines around the match, which returns waaayyy too much data. scroll to the top; that's where this fragment is found
@@ -168,46 +187,46 @@ cl.9212 #4 snps in this fragment
 #       AAATCAAGTA AAGATACTTA AGTGACTGTT AGTTTTTTAT CTCTTAAGCA TGAGAACTCT TCCACTCGGC CCTGTTTCAT TACCACGGTG CGGTGC
 
 #png(file='~/Dropbox/ddRADseq/D_variabilis_Pseudoref/Bayescan_Update_HB_Only_OutlierFst.png', height=10, width=15, unit='cm', res=300)
-pdf(file='~/Dropbox/ddRADseq/D_variabilis_Pseudoref/Bayescan_Update_HB_Only_OutlierFst.pdf', height=c(10/2.54), width=c(15/2.54))
-par(mfrow=c(1,1), mar=c(5,7,4,2))
-plot(pd$qval, pd$fst, pch=16, col='gray', cex=1.5, cex.axis=1.5, xlim=c(0,1), ylim=c(0,0.07),
-     bty='n', las=1, xlab='q-value', ylab="", cex.lab=1.5)
+#pdf(file='~/Dropbox/ddRADseq/D_variabilis_Pseudoref/Bayescan_Update_HB_Only_OutlierFst.pdf', height=c(10/2.54), width=c(15/2.54))
+#par(mfrow=c(1,1), mar=c(5,7,4,2))
+#plot(pd$qval, pd$fst, pch=16, col='gray', cex=1.5, cex.axis=1.5, xlim=c(0,1), ylim=c(0,0.07),
+#     bty='n', las=1, xlab='q-value', ylab="", cex.lab=1.5)
 #abline(v=0.05)
-points(x=subset(pd, qval==min(pd$qval))$qval,
-       y=subset(pd, qval==min(pd$qval))$fst,
-       col=c('#74a9cf'), pch=16, cex=1.5)
-mtext(text='Fst', side=2, line=4.3, cex=1.5)
-legend(x=0.005, y=0.069, legend=c('q=0.007', expression('F'['ST']==0.06)), pch=16, border=NA, col=c('white'), bty='n', cex=1)
-dev.off()
+#points(x=subset(pd, qval==min(pd$qval))$qval,
+#       y=subset(pd, qval==min(pd$qval))$fst,
+#       col=c('#74a9cf'), pch=16, cex=1.5)
+#mtext(text='Fst', side=2, line=4.3, cex=1.5)
+#legend(x=0.005, y=0.069, legend=c('q=0.007', expression('F'['ST']==0.06)), pch=16, border=NA, col=c('white'), bty='n', cex=1)
+#dev.off()
 
 # make outlier locus allele frequency barplots
-outlier<-matrix(c(1,0,56/84,28/84), nrow=2, ncol=2) #Fst=0.06
+#outlier<-matrix(c(1,0,56/84,28/84), nrow=2, ncol=2) #Fst=0.06
 # confidence intervals for proportions live here... some lines have been commented out to make this work
-source('~/Dropbox/2014&Older/ModelFitting/R Scripts/PlotPrevCI.r')
-CI.op.T<-KL.CI(1, 46, 46, data=NA)
-CI.racc.T<-KL.CI(56/84, 56, 84, data=NA)
+#source('~/Dropbox/2014&Older/ModelFitting/R Scripts/PlotPrevCI.r')
+#CI.op.T<-KL.CI(1, 46, 46, data=NA)
+#CI.racc.T<-KL.CI(56/84, 56, 84, data=NA)
 
 
 #png(file='~/Dropbox/ddRADseq/D_variabilis_Pseudoref/OutlierLocus_PopFiltered_BlackBG.png', height=10, width=15, unit='cm', res=300)
-par(bg="black", col.axis="white",col.lab="white", col.main="white", col.sub="white", fg="white")
-par(mfrow=c(1,1), mar=c(5,6,2,4))
-barplot(as.matrix(outlier), col=c('#74a9cf', '#bdc9e1'),
-        xlim=c(0.2,2.7), width=0.8, border=NA,
-        cex.axis=1.5, cex.names=1.5, cex.lab=1.5, las=1)
+#par(bg="black", col.axis="white",col.lab="white", col.main="white", col.sub="white", fg="white")
+#par(mfrow=c(1,1), mar=c(5,6,2,4))
+#barplot(as.matrix(outlier), col=c('#74a9cf', '#bdc9e1'),
+#        xlim=c(0.2,2.7), width=0.8, border=NA,
+#        cex.axis=1.5, cex.names=1.5, cex.lab=1.5, las=1)
 
-lines(x=c(0.55, 0.55), y=c(CI.op.T[2], CI.op.T[3]), lwd=3)
-lines(x=c(0.5, 0.6), y=rep(CI.op.T[2],2), lwd=3)
-lines(x=c(0.5, 0.6), y=rep(CI.op.T[3],2), lwd=3)
+#lines(x=c(0.55, 0.55), y=c(CI.op.T[2], CI.op.T[3]), lwd=3)
+#lines(x=c(0.5, 0.6), y=rep(CI.op.T[2],2), lwd=3)
+#lines(x=c(0.5, 0.6), y=rep(CI.op.T[3],2), lwd=3)
 
-lines(x=c(1.53, 1.53), y=c(CI.racc.T[2], CI.racc.T[3]), lwd=3)
-lines(x=c(1.48, 1.58), y=rep(CI.racc.T[2],2), lwd=3)
-lines(x=c(1.48, 1.58), y=rep(CI.racc.T[3],2), lwd=3)
+#lines(x=c(1.53, 1.53), y=c(CI.racc.T[2], CI.racc.T[3]), lwd=3)
+#lines(x=c(1.48, 1.58), y=rep(CI.racc.T[2],2), lwd=3)
+#lines(x=c(1.48, 1.58), y=rep(CI.racc.T[3],2), lwd=3)
 
-mtext(text=c('Allele Frequency'), side=2, line=4, cex=1.5)
-mtext(text=c('Opossum\nTicks', 'Raccoon\nTicks'), side=1, line=3, 
-      at=c(0.55,1.54), cex=1.5)
-legend(x='topright', legend=c('T', 'G'), border=NA,
-       fill=c('#74a9cf', '#bdc9e1'), bty='n', cex=1.5)
+#mtext(text=c('Allele Frequency'), side=2, line=4, cex=1.5)
+#mtext(text=c('Opossum\nTicks', 'Raccoon\nTicks'), side=1, line=3, 
+#      at=c(0.55,1.54), cex=1.5)
+#legend(x='topright', legend=c('T', 'G'), border=NA,
+#       fill=c('#74a9cf', '#bdc9e1'), bty='n', cex=1.5)
 #dev.off()
 
 
