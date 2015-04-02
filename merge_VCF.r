@@ -23,8 +23,12 @@
 # non-hierarchical data, HB only, filtered first by whole population (minmeanDP20, minGQ25, maxmissing0.75), 
 # then by raccoon/opossum subsets (maf0.05 each)
 
-opHB<-read.table('~/Desktop/D_variabilis_Pseudoref/opossum_pseudoref_maf0.05_minmeanDP20_minGQ25_maxmissing0.75.recode.vcf', comment.char="", skip=417187, header=TRUE)
-raccHB<-read.table('~/Desktop/D_variabilis_Pseudoref/raccoon_pseudoref_maf0.05_minmeanDP20_minGQ25_maxmissing0.75.recode.vcf', comment.char="", skip=417187, header=TRUE)
+#opHB<-read.table('~/Desktop/D_variabilis_Pseudoref/opossum_pseudoref_maf0.05_minmeanDP20_minGQ25_maxmissing0.75.recode.vcf', comment.char="", skip=417187, header=TRUE)
+#raccHB<-read.table('~/Desktop/D_variabilis_Pseudoref/raccoon_pseudoref_maf0.05_minmeanDP20_minGQ25_maxmissing0.75.recode.vcf', comment.char="", skip=417187, header=TRUE)
+
+opHB<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_OPOSSUM.recode.vcf', comment.char="", skip=417187, header=TRUE)
+raccHB<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_RACCOON.recode.vcf', comment.char="", skip=417187, header=TRUE)
+
 
 # Unique identifiers are the "chromosome" (pseudoreference sequence) and the site of the SNP.
 # Pseudoreference sequence IDs are non-unique, SNP sites are non-unique, but the combination of the two is unique
@@ -87,11 +91,12 @@ write.table(all.data.vcf, file="~/Desktop/UT_ddRADseq/Hierarchical_Merged_Pseudo
 names(HB.merge)
 HB.vcf<-cbind(HB.merge[,2:39], HB.merge[,49:102])
 length(HB.vcf[1,]) #83 individuals in HB dataset -- checks out (92-9 leading columns)
-final.HB.names<-c("#X.CHROM", names(opHB[2:9]),names(HB.vcf[10:length(names(HB.vcf))]))
+HB.names<-sub('\\.', '-', c(names(opHB[2:9]),names(HB.vcf[10:length(names(HB.vcf))]))) #fix the formatting of the names to be consistent with keep_files
+final.HB.names<-c("#CHROM", HB.names)
 names(HB.vcf)<-final.HB.names
 head(HB.vcf)
 ## write it to file
-write.table(HB.vcf, file="~/Desktop/UT_ddRADseq/PopFiltered_Merged_HB_Only_Pseudoref_minmeanDP20_minGQ25_maf0.05.vcf", quote=FALSE,
+write.table(HB.vcf, file="~/Desktop/D_variabilis_Pseudoref//Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED.vcf", quote=FALSE,
             row.names=FALSE, sep="\t")
 
 ## Raccoons and opossums from both sites (not hierarchically filtered)
