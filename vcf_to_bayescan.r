@@ -48,8 +48,13 @@ library(gplots)
 #names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 #names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 
-pop.1<-read.table('~/Desktop/UT_ddRADseq/Op_PopFiltered_HB_COUNTS.frq.count', skip=1)
-pop.2<-read.table('~/Desktop/UT_ddRADseq/Racc_PopFiltered_HB_COUNTS.frq.count', skip=1)
+#pop.1<-read.table('~/Desktop/UT_ddRADseq/Op_PopFiltered_HB_COUNTS.frq.count', skip=1)
+#pop.2<-read.table('~/Desktop/UT_ddRADseq/Racc_PopFiltered_HB_COUNTS.frq.count', skip=1)
+#names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
+#names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
+
+pop.1<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_opossum_counts.frq.count', skip=1)
+pop.2<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_raccoon_counts.frq.count', skip=1)
 names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 
@@ -155,23 +160,42 @@ bs2.keep$X1<-seq(1,length(bs2.keep[,1]),1)
 #write.table(bs1.keep, file='~/Dropbox/ddRADseq/pseudoref_maf0.1_minmeanDP20_minGQ25_maxmissing0.75_opossums_NotMissing_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
 #write.table(bs2.keep, file='~/Dropbox/ddRADseq/pseudoref_maf0.1_minmeanDP20_minGQ25_maxmissing0.75_raccoons_NotMissing_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
 
-write.table(bs1.keep, file='~/Dropbox/ddRADseq/PopFiltered_Merged_opossum_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
-write.table(bs2.keep, file='~/Dropbox/ddRADseq/PopFiltered_Merged_raccoon_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
+#write.table(bs1.keep, file='~/Dropbox/ddRADseq/PopFiltered_Merged_opossum_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
+#write.table(bs2.keep, file='~/Dropbox/ddRADseq/PopFiltered_Merged_raccoon_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
+
+write.table(bs1.keep, file='~/Dropbox/ddRADseq/Final_Merged_Opossum', quote=FALSE, row.names=FALSE, col.names=FALSE)
+write.table(bs2.keep, file='~/Dropbox/ddRADseq/Final_Merged_Raccoon', quote=FALSE, row.names=FALSE, col.names=FALSE)
 
 ## Analysis 3/2015
 
 ##########################
+# Final
+
+bs.final<-read.table('~/Dropbox/ddRADseq/Final_Bayescan_Input_fst.txt')
+plot(bs.final$qval, bs.final$fst)
+min(bs.final$qval)
+
+##########################
+# HB ONLY, all HB samples filtered minmeanDP20, minGQ25, maxmissing0.75, Racc vs Op filtered maf0.05
+
+bs.out<-read.table('~/Dropbox/ddRADseq/PopFiltered_Merged_Bayescan_Input_fst.txt')
+plot(bs.out$qval, bs.out$fst)
+head(bs.out)
+length(bs.out[,1])
+min(bs.out$qval)
+
+##########################
 #This one is all site/species combos, but filtered hierarchically
-pd<-read.table('~/Dropbox/ddRADseq/Hierarchical_Merged_Bayescan_Input_fst.txt')
-plot(pd$qval, pd$fst)
+#pd<-read.table('~/Dropbox/ddRADseq/Hierarchical_Merged_Bayescan_Input_fst.txt')
+#plot(pd$qval, pd$fst)
 
 ##########################
 #So this all is HB only, where the filtering was done on HB vs. SRT... not exactly what I want in the end...
 
-#pd<-read.table('~/Dropbox/ddRADseq/Updated_Outlier_Analysis/Bayescan_Input_UpdatedPseudoref_HB_Only_fst.txt')
-#plot(pd$qval, pd$fst)
-#plot(pd$qval, pd$alpha)
-#mean(pd$fst)
+pd<-read.table('~/Dropbox/ddRADseq/Updated_Outlier_Analysis/Bayescan_Input_UpdatedPseudoref_HB_Only_fst.txt')
+plot(pd$qval, pd$fst)
+plot(pd$qval, pd$alpha)
+mean(pd$fst)
 
 #pd[which(pd$qval==min(pd$qval)),] #2487
 
