@@ -53,8 +53,14 @@ library(gplots)
 #names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 #names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 
-pop.1<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_opossum_counts.frq.count', skip=1)
-pop.2<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_raccoon_counts.frq.count', skip=1)
+#pop.1<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_opossum_counts.frq.count', skip=1)
+#pop.2<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_raccoon_counts.frq.count', skip=1)
+#names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
+#names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
+
+# unrelated ticks from HB
+pop.1<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_not_related_op_counts.frq.count', skip=1)
+pop.2<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_not_related_racc_counts.frq.count', skip=1)
 names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 
@@ -163,19 +169,43 @@ bs2.keep$X1<-seq(1,length(bs2.keep[,1]),1)
 #write.table(bs1.keep, file='~/Dropbox/ddRADseq/PopFiltered_Merged_opossum_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
 #write.table(bs2.keep, file='~/Dropbox/ddRADseq/PopFiltered_Merged_raccoon_Bayescan', quote=FALSE, row.names=FALSE, col.names=FALSE)
 
-write.table(bs1.keep, file='~/Dropbox/ddRADseq/Final_Merged_Opossum', quote=FALSE, row.names=FALSE, col.names=FALSE)
-write.table(bs2.keep, file='~/Dropbox/ddRADseq/Final_Merged_Raccoon', quote=FALSE, row.names=FALSE, col.names=FALSE)
+#write.table(bs1.keep, file='~/Dropbox/ddRADseq/Final_Merged_Opossum', quote=FALSE, row.names=FALSE, col.names=FALSE)
+#write.table(bs2.keep, file='~/Dropbox/ddRADseq/Final_Merged_Raccoon', quote=FALSE, row.names=FALSE, col.names=FALSE)
+
+write.table(bs1.keep, file='~/Dropbox/ddRADseq/Final_not_related_Merged_Opossum', quote=FALSE, row.names=FALSE, col.names=FALSE)
+write.table(bs2.keep, file='~/Dropbox/ddRADseq/Final_not_relatedMerged_Raccoon', quote=FALSE, row.names=FALSE, col.names=FALSE)
+
 
 ## Analysis 3/2015
 
 ##########################
-# Final
+# Final, HB unrelated
+
+bs.not.related<-read.table('~/Dropbox/ddRADseq/D_variabilis_Pseudoref/Final_not_related_Merged_Bayescan_Input_fst.txt')
+min(bs.not.related$qval)
+
+png(file='~/Dropbox/ddRADseq/Final_Plots_April_2015/HB_fst_outlier.png', height=15, width=15, unit='cm', res=300)
+par(mar=c(6,6,2,2))
+plot(bs.not.related$qval, bs.not.related$fst, pch=16, col='gray', cex=1.5, cex.axis=1.5, xlim=c(0,1), 
+     ylim=c(0,0.04),bty='n', las=1, xlab='q-value', ylab="", cex.lab=1.5)
+mtext(text=expression('F'[ST]), side=2, line=4.3, cex=1.5)
+dev.off()
+
+mean.fst<-mean(bs.not.related$fst)
+plot(density(bs.not.related$fst))
+median(bs.not.related$fst)
+min(bs.not.related$fst)
+max(bs.not.related$fst)
+
+##########################
 
 bs.final<-read.table('~/Dropbox/ddRADseq/Final_Bayescan_Input_fst.txt')
 plot(bs.final$qval, bs.final$fst)
 min(bs.final$qval)
+min(bs.final$fst)
+max(bs.final$fst)
 
-##########################
+
 # HB ONLY, all HB samples filtered minmeanDP20, minGQ25, maxmissing0.75, Racc vs Op filtered maf0.05
 
 bs.out<-read.table('~/Dropbox/ddRADseq/PopFiltered_Merged_Bayescan_Input_fst.txt')
