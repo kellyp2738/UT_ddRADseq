@@ -53,4 +53,5 @@ for(n in 1:length(pop.files)){ #iteratively process files
   write.table(pop.save, file=file.path('~/Dropbox/ddRADseq/', paste(pop.files[n], '_Bayescan', sep="")), quote=FALSE, row.names=FALSE, col.names=FALSE) 
 }
 
-
+by.ind<-read.table('~/Dropbox/ddRADseq/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_BY_INDIVIDUAL_count_Baye_fst.txt')
+plot(by.ind$qval, by.ind$fst)
