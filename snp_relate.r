@@ -48,9 +48,9 @@ write.table(vcf.all.fix, file='~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Si
 ##    - replace "." with "-" in the sample names (prob unnecessary, but it was done)
 
 ## read in edited file
-gds.all.ticks<-"snps_all.gds"
+gds.all.ticks<-"snps_all_again2.gds"
 snpgdsVCF2GDS('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_maxmissing0.75_MERGED_chromFix.vcf', 
-              gds.all.ticks, verbose=FALSE)
+              gds.all.ticks, verbose=TRUE)
 (gds<-GdsGenotypeReader(gds.all.ticks))
 getScanID(gds) #check IDs
 
@@ -70,27 +70,43 @@ snpAnnot <- SnpAnnotationDataFrame(data.frame(snpID, chromosome, position,
 does.it.match<-cbind(sort(getScanID(gds)), as.character(extra.data$combo.label)) #if extra.data and getScanID(gds) are in the same order, just pull the scanIDs directly from gds
 pop.group<-as.character(extra.data$coll.site)
 sex<-as.character(extra.data$sex)
-sampleAnnot<-ScanAnnotationDataFrame(data.frame(scanID=getScanID(gds), pop.group, sex))
-genoData<-GenotypeData(gds, snpAnnot=snpAnnot, scanAnnot=sampleAnnot)
+scanAnnot<-ScanAnnotationDataFrame(data.frame(scanID=getScanID(gds), pop.group, sex))
+genoData<-GenotypeData(gds, snpAnnot=snpAnnot, scanAnnot=scanAnnot)
 getGenotype(genoData)
 getSex(genoData)
 getScanVariable(genoData, "pop.group")
-close(genoData)
 
+createDataFile(path=".", filename="fixed_all_snps", file.type="gds",
+               variables="genotype", snp.annotation=snpAnnot, scan.annotation=scanAnnot)
+
+snpgdsCombineGeno(c(genoData), "snp_output")
+snpgdsSummary(genoData)
+
+close(genoData)
+open(genoData)
 
 
 ## reopen data
 snpgdsClose(genofile)
-genofile<-snpgdsOpen('snps_all.gds', allow.duplicate=TRUE) #in /Users/kelly
+genofile<-snpgdsOpen('snps_all_again2.gds', allow.duplicate=TRUE) #in /Users/kelly
+
+#genofile <- snpgdsOpen(snpgdsExampleFileName())
+
+get.attr.gdsn(index.gdsn(genofile))
+genofile<-GdsGenotypeReader('snps_all.gds')
 
 ## Fst
 getSex(genofile)
-pop_code<-read.gdsn(index.gdsn(genofile, "sample.annot/pop.group"))
+pop_code<-read.gdsn(index.gdsn(genofile, path="sample.annot/pop.group"))
+
+genofile$scanAnnot
 
 sample.id <- read.gdsn(index.gdsn(genofile, "sample.id"))
 pop_code <- read.gdsn(index.gdsn(genofile, "sampleAnnot"))
 attributes(genofile)
 genofile$names
+
+snpgdsFst(genofile, population=getScanVariable(genoData, "pop.group"), method="W&C84")
 
 ## Identity by descent (IBD)
 
