@@ -7,7 +7,7 @@
 ## INSTALL & LOAD PACKAGES
 library("ape")
 library("genetics")
-# dependency for pegas; not on CRAN
+# dependency for pegas; not on CRAN for linux (on CRAN for OS X)
 install.packages("~/Desktop//Rcpp/", repos=NULL,
                  type="source")
 library("pegas")
@@ -42,7 +42,8 @@ file.show(system.file("files/exampleSnpDat.snp",package="adegenet"))
 
 ## RELATED TICKS NOT REMOVED
 # read in data
-site<-read.snp('~/Desktop/D_variabilis_Pseudoref/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_only_maxmissing0.75_MERGED_FOR_ADEGENET.finalSNPs_site.snp')
+#site<-read.snp('~/Desktop/D_variabilis_Pseudoref/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_only_maxmissing0.75_MERGED_FOR_ADEGENET.finalSNPs_site.snp')
+site<-read.snp('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_only_maxmissing0.75_MERGED_FOR_ADEGENET.finalSNPs_site.snp')
 # look at principal coordinates
 pca.site<-glPca(site)
 site.name<-site@pop
@@ -62,6 +63,10 @@ post.df.site<-data.frame(cbind(row.names(post.data.site), post.data.site$HB, pos
 names(post.df.site)<-c('ID', 'HB', 'SRT')
 post.df.site.c<-merge(post.df.site, extra.data, by.x='ID', by.y='combo.label') # add site data to posteriors data frame
 post.df.site.trimmed<-cbind(post.df.site.c[,1:3], post.df.site.c$coll.site)
+predict.HB<-subset(post.df.site.trimmed, post.df.site.trimmed[,4]=='HB' & as.numeric(as.character(post.df.site.trimmed[,2]))>0.5)
+predict.SRT<-subset(post.df.site.trimmed, post.df.site.trimmed[,4]=='SRT' & as.numeric(as.character(post.df.site.trimmed[,3]))>0.5)
+correct.HB<-length(predict.HB[,1])
+correct.SRT<-length(predict.SRT[,1])
 post.df.site.trimmed.sort<-post.df.site.trimmed[order(post.df.site.trimmed$HB),]
 colors.site<-c('gray19', 'gray70')
 pdf(file='~/Dropbox/ddRADseq/Final_Plots_April_2015/dapc_by_site_posterior.pdf', width=25/2.54, height=10/2.54)
@@ -84,7 +89,8 @@ dev.off()
 ## WITHIN HARRISON BAYOU, HOST SPECIES CORRESPONDS TO LOW-LEVEL POPULATION DIFFERENTIATION
 
 # read in data
-tick.snps2<-read.snp('~/Desktop/D_variabilis_Pseudoref/Final_Analysis/Structure_by_Host_HB/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_not_related_FOR_ADEGENET.finalSNPs.snp')
+#tick.snps2<-read.snp('~/Desktop/D_variabilis_Pseudoref/Final_Analysis/Structure_by_Host_HB/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_not_related_FOR_ADEGENET.finalSNPs.snp')
+tick.snps2<-read.snp('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_HB/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_not_related_FOR_ADEGENET.finalSNPs.snp')
 # discriminant analysis of principal components to detect clusters
 dapc2<-dapc(tick.snps2, pop=tick.snps2@pop, n.pca=21, n.da=1) 
 pdf(file='~/Dropbox/ddRADseq/Final_Plots_April_2015/dapc_by_host.pdf', height=10/2.54, width=10/2.54)
@@ -100,6 +106,12 @@ names(post.df)<-c('tick', 'O', 'R')
 post.df.host.type<-merge(post.df, extra.data, by.x='tick', by.y='combo.label')
 post.df.ht.trimmed<-cbind(post.df.host.type[,1:3], post.df.host.type$host.species)
 post.df.sort<-post.df.ht.trimmed[order(post.df.ht.trimmed[,2]),] # sort character data w/names in the same way
+predict.HB.op<-subset(post.df.ht.trimmed, post.df.ht.trimmed[,4]=='op' & as.numeric(as.character(post.df.ht.trimmed[,2]))>0.5)
+predict.HB.racc<-subset(post.df.ht.trimmed, post.df.ht.trimmed[,4]=='racc' & as.numeric(as.character(post.df.ht.trimmed[,3]))>0.5)
+n.racc<-length(subset(post.df.ht.trimmed, post.df.ht.trimmed[,4]=='racc')[,1])
+n.op<-length(subset(post.df.ht.trimmed, post.df.ht.trimmed[,4]=='op')[,1])
+correct.HB.op<-length(predict.HB.op[,1])
+correct.HB.racc<-length(predict.HB.racc[,1])
 label.cols<-c('blue','red')
 pdf(file='~/Dropbox/ddRADseq/Final_Plots_April_2015/dapc_by_host_posterior.pdf', height=10/2.54, width=25/2.54)
 par(mar=c(6,4,2,8), xpd=TRUE)
@@ -138,7 +150,8 @@ dev.off()
 ## WITHIN STARR RANCH TRAIL, HOST SPECIES CORRESPONDS TO LOW-LEVEL POPULATION DIFFERENTIATION?
 
 ## read in data
-tick.snps3<-read.snp('~/Desktop/D_variabilis_Pseudoref/Final_Analysis/Structure_by_Host_SRT/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_MERGED_not_related_FOR_ADEGENET.finalSNPs.snp')
+#tick.snps3<-read.snp('~/Desktop/D_variabilis_Pseudoref/Final_Analysis/Structure_by_Host_SRT/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_MERGED_not_related_FOR_ADEGENET.finalSNPs.snp')
+tick.snps3<-read.snp('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_SRT/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_MERGED_not_related_FOR_ADEGENET.finalSNPs.snp')
 pca.srt<-glPca(tick.snps3)
 scatter(pca.srt)
 
