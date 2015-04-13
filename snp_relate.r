@@ -13,6 +13,7 @@ biocLite("SNPRelate")
 #sudo apt-get install udunits-bin
 #sudo apt-get install libudunits2-dev
 install.packages("ncdf", type = "source", configure.args="--with-netcdf-include=/usr/include")
+install.packages("ncdf") # works just fine like this for OSX
 biocLite("GWASTools")
 #####################################################################
 
@@ -25,6 +26,140 @@ library(gplots)
 library(fields)
 library(RColorBrewer)
 #####################################################################
+
+#####################################################################
+## BOTH SITES 
+##
+
+extra.data<-read.csv('~/Desktop/UT_ddRADseq/ddRAD_FinalLibrary_SampleInfo_Full.csv', header=TRUE)
+
+## Load VCF file and convert to GDS object
+## following instructions found here: http://www.bioconductor.org/packages/release/bioc/vignettes/GWASTools/inst/doc/Formats.pdf
+## this site also has great documentation on getting your data into SNPRelate: http://corearray.sourceforge.net/tutorials/SNPRelate/#installation-of-the-package-snprelate
+
+## format chromosome IDs properly
+vcf.all.fix<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_only_maxmissing0.75_MERGED.vcf', 
+                    comment.char="", header=TRUE)
+vcf.all.fix[,1]<-gsub(pattern="_*[a-z]*", replacement="", vcf.all.fix[,1], perl=TRUE)
+write.table(vcf.all.fix, file='~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_maxmissing0.75_MERGED_chromFix.vcf',
+            quote=FALSE, row.names=FALSE, sep="\t")
+## manual edits to the VCF file so it can be loaded:
+##    - change X.CHROM to #CHROM
+##    - replace "." with "-" in the sample names (prob unnecessary, but it was done)
+
+## read in edited file
+gds.all.ticks<-"snps_all.gds"
+snpgdsVCF2GDS('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_maxmissing0.75_MERGED_chromFix.vcf', 
+              gds.all.ticks, verbose=FALSE)
+(gds<-GdsGenotypeReader(gds.all.ticks))
+getScanID(gds) #check IDs
+
+snpID <- getSnpID(gds)
+chromosome <- as.integer(getChromosome(gds))
+position <- getPosition(gds)
+alleleA <- getAlleleA(gds)
+alleleB <- getAlleleB(gds)
+rsID <- getVariable(gds, "snp.rs.id")
+qual <- getVariable(gds, "snp.annot/qual")
+filter <- getVariable(gds, "snp.annot/filter")
+snpAnnot <- SnpAnnotationDataFrame(data.frame(snpID, chromosome, position,
+                                              rsID, alleleA, alleleB,
+                                              qual, filter, stringsAsFactors=FALSE))
+
+#scanID<-as.character(extra.data$combo.label) doesn't work... doesn't stay as character
+does.it.match<-cbind(sort(getScanID(gds)), as.character(extra.data$combo.label)) #if extra.data and getScanID(gds) are in the same order, just pull the scanIDs directly from gds
+pop.group<-as.character(extra.data$coll.site)
+sex<-as.character(extra.data$sex)
+sampleAnnot<-ScanAnnotationDataFrame(data.frame(scanID=getScanID(gds), pop.group, sex))
+genoData<-GenotypeData(gds, snpAnnot=snpAnnot, scanAnnot=sampleAnnot)
+getGenotype(genoData)
+getSex(genoData)
+getScanVariable(genoData, "pop.group")
+close(genoData)
+
+
+
+## reopen data
+snpgdsClose(genofile)
+genofile<-snpgdsOpen('snps_all.gds', allow.duplicate=TRUE) #in /Users/kelly
+
+## Fst
+getSex(genofile)
+pop_code<-read.gdsn(index.gdsn(genofile, "sample.annot/pop.group"))
+
+sample.id <- read.gdsn(index.gdsn(genofile, "sample.id"))
+pop_code <- read.gdsn(index.gdsn(genofile, "sampleAnnot"))
+attributes(genofile)
+genofile$names
+
+## Identity by descent (IBD)
+
+#not LD pruned
+ibd<-snpgdsIBDMLE(genofile, autosome.only=FALSE, kinship=TRUE) 
+ibd.coeff<-snpgdsIBDSelection(ibd)
+write.table(ibd.coeff, file='~/Desktop/D_variabilis_Pseudoref/identity_by_descent_HB.txt',
+            quote=FALSE, row.names=FALSE) #since moved; see file path below
+ibd.coeff<-read.table(file='~/Desktop/')
+plot(ibd.coeff$k0, ibd.coeff$k1, xlim=c(0,1), ylim=c(0,1))
+plot(ibd$kinship, pch=16, col=alpha('blue', 0.25), xlim=c(0,1), ylim=c(0,1))
+related<-ibd.coeff[which(ibd.coeff$kinship>=1/16),]
+related.unique<-unique(c(related$ID1, related$ID2))
+ibd.thresholds<-c(0,1/16,1/8,1/4,1/2) #color by relatedness (0-1/16=unrelated, 1/16-1/8=first cousins, 1/8-1/4=half sibs or dbl first cousisn, 1/4-1/2=parent/child or full sibs, 1/2=identical)
+tick.names<-gsub(pattern="_.*", replacement="", unique(c(ibd.coeff$ID1, ibd.coeff$ID2)), perl=TRUE)
+#pdf(file='~/Desktop/D_variabilis_Pseudoref/kinship_estimates_IBD_HB.pdf', height=30/2.54, width=30/2.54)
+par(mar=c(6,6,4,10), xpd=TRUE)
+image(x=1:ncol(ibd$kinship), y=1:ncol(ibd$kinship), z=ibd$kinship, col=brewer.pal(4, 'Blues'), 
+      breaks=ibd.thresholds, axes=FALSE, xlab="", ylab="")
+mtext(side=1, line=1, text=tick.names, at=1:ncol(ibd$kinship), las=2, cex=0.5)
+mtext(side=2, line=1, text=tick.names, at=1:ncol(ibd$kinship), las=2, cex=0.5)
+legend(x=85, y=50, , fill=brewer.pal(4, 'Blues'),
+       legend=c('0-1/16', '1/16-1/8', '1/8-1/4', '1/4-1/2'),
+       #legend=c('unrelated', 'first cousins', 'half-siblings', 'parent-child or full siblings', 'identical'),
+       bty='n', border='white', title='Kinship \nCoefficient')
+
+lines(x=c(0.5,8.5), y=c(0.5, 0.5))
+lines(y=c(0.5,8.5), x=c(0.5, 0.5))
+lines(x=c(0.5,8.5), y=c(8.5, 8.5))
+lines(y=c(0.5,8.5), x=c(8.5, 8.5))
+
+lines(x=c(29.5,29.5), y=c(8.5, 29.5))
+lines(y=c(29.5,29.5), x=c(8.5, 29.5))
+lines(y=c(8.5,8.5), x=c(8.5, 29.5))
+lines(x=c(8.5,8.5), y=c(8.5, 29.5))
+
+lines(x=c(29.5,29.5), y=c(29.5, 39.5))
+lines(y=c(29.5,29.5), x=c(29.5, 39.5))
+lines(x=c(39.5,39.5), y=c(29.5, 39.5))
+lines(y=c(39.5,39.5), x=c(29.5, 39.5))
+
+lines(x=c(39.5,39.5), y=c(39.5, 43.5))
+lines(y=c(39.5,39.5), x=c(39.5, 43.5))
+lines(x=c(43.5,43.5), y=c(39.5, 43.5))
+lines(y=c(43.5,43.5), x=c(39.5, 43.5))
+
+lines(x=c(43.5,43.5), y=c(43.5, 61.5))
+lines(y=c(43.5,43.5), x=c(43.5, 61.5))
+lines(x=c(61.5,61.5), y=c(43.5, 61.5))
+lines(y=c(61.5,61.5), x=c(43.5, 61.5))
+
+lines(x=c(61.5,61.5), y=c(61.5, 65.5))
+lines(y=c(61.5,61.5), x=c(61.5, 65.5))
+lines(x=c(65.5,65.5), y=c(61.5, 65.5))
+lines(y=c(65.5,65.5), x=c(61.5, 65.5))
+
+lines(x=c(83.5,83.5), y=c(65.5, 83.5))
+lines(y=c(83.5,83.5), x=c(65.5, 83.5))
+lines(x=c(65.5,65.5), y=c(65.5, 83.5))
+lines(y=c(65.5,65.5), x=c(65.5, 83.5))
+
+dev.off()
+
+# write out a list of related individuals to exclude from future analyses
+#write.table(related.unique, file='~/Desktop/UT_ddRADseq/keep_files/exclude_related.txt', 
+#            quote=FALSE, row.names=FALSE, col.names=FALSE)
+
+
+
 
 #####################################################################
 ## HARRISON BAYOU ONLY 
@@ -45,7 +180,9 @@ write.table(vcf.fix, file='/home/antolinlab/Desktop/D_variabilis_Pseudoref/Final
 
 ## read in edited file
 gds.ticks<-"snps_fixed.gds"
-snpgdsVCF2GDS('/home/antolinlab/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_chromFix.vcf', 
+#snpgdsVCF2GDS('/home/antolinlab/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_chromFix.vcf', 
+#              gds.ticks, verbose=FALSE)
+snpgdsVCF2GDS('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_chromFix.vcf', 
               gds.ticks, verbose=FALSE)
 (gds<-GdsGenotypeReader(gds.ticks))
 getScanID(gds) #check IDs
