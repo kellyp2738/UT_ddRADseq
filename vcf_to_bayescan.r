@@ -59,8 +59,20 @@ library(gplots)
 #names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 
 # unrelated ticks from HB
-pop.1<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_not_related_op_counts.frq.count', skip=1)
-pop.2<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_not_related_racc_counts.frq.count', skip=1)
+#pop.1<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_not_related_op_counts.frq.count', skip=1)
+#pop.2<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_not_related_racc_counts.frq.count', skip=1)
+#names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
+#names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
+
+# unrelated ticks from SRT
+pop.1<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_SRT/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_MERGED_not_related_op_counts.frq.count', skip=1)
+pop.2<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_SRT/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_MERGED_not_related_racc_counts.frq.count', skip=1)
+names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
+names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
+
+# all ticks, all sites
+pop.1<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_maxmissing0.75_MERGED_not_related_op_counts.frq.count', skip=1)
+pop.2<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_maxmissing0.75_MERGED_not_related_racc_counts.frq.count', skip=1)
 names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 
