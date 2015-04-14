@@ -26,24 +26,30 @@
 #opHB<-read.table('~/Desktop/D_variabilis_Pseudoref/opossum_pseudoref_maf0.05_minmeanDP20_minGQ25_maxmissing0.75.recode.vcf', comment.char="", skip=417187, header=TRUE)
 #raccHB<-read.table('~/Desktop/D_variabilis_Pseudoref/raccoon_pseudoref_maf0.05_minmeanDP20_minGQ25_maxmissing0.75.recode.vcf', comment.char="", skip=417187, header=TRUE)
 
-opHB<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_OPOSSUM.recode.vcf', comment.char="", skip=417187, header=TRUE)
-raccHB<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_RACCOON.recode.vcf', comment.char="", skip=417187, header=TRUE)
+## Final HB Only Analysis
+#opHB<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_OPOSSUM.recode.vcf', comment.char="", skip=417187, header=TRUE)
+#raccHB<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_RACCOON.recode.vcf', comment.char="", skip=417187, header=TRUE)
+
+## Final SRT Only Analysis
+opSRT<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_OPOSSUM.recode.vcf', comment.char="", skip=417187, header=TRUE)
+raccSRT<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_RACCOON.recode.vcf', comment.char="", skip=417187, header=TRUE)
+
 
 
 # Unique identifiers are the "chromosome" (pseudoreference sequence) and the site of the SNP.
 # Pseudoreference sequence IDs are non-unique, SNP sites are non-unique, but the combination of the two is unique
 # Create columns of Pseudoreference ID + SNP site to uniquely identify each SNP in each dataset
-opHB.sites<-paste(opHB[,1], opHB[,2], sep="_")
-opHB.update<-cbind(opHB, opHB.sites)
+#opHB.sites<-paste(opHB[,1], opHB[,2], sep="_")
+#opHB.update<-cbind(opHB, opHB.sites)
 
-#opSRT.sites<-paste(opSRT[,1], opSRT[,2], sep="_")
-#opSRT.update<-cbind(opSRT, opSRT.sites)
+opSRT.sites<-paste(opSRT[,1], opSRT[,2], sep="_")
+opSRT.update<-cbind(opSRT, opSRT.sites)
 
-raccHB.sites<-paste(raccHB[,1], raccHB[,2], sep="_")
-raccHB.update<-cbind(raccHB, raccHB.sites)
+#raccHB.sites<-paste(raccHB[,1], raccHB[,2], sep="_")
+#raccHB.update<-cbind(raccHB, raccHB.sites)
 
-#raccSRT.sites<-paste(raccSRT[,1], raccSRT[,2], sep="_")
-#raccSRT.update<-cbind(raccSRT, raccSRT.sites)
+raccSRT.sites<-paste(raccSRT[,1], raccSRT[,2], sep="_")
+raccSRT.update<-cbind(raccSRT, raccSRT.sites)
 
 #opAll.sites<-paste(opAll[,1], opAll[,2], sep='_')
 #opAll.update<-cbind(opAll, opAll.sites)
@@ -99,6 +105,51 @@ head(HB.vcf)
 write.table(HB.vcf, file="~/Desktop/D_variabilis_Pseudoref//Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED.vcf", quote=FALSE,
             row.names=FALSE, sep="\t")
 
+## SRT only, same process as above
+names(SRT.merge)
+SRT.vcf<-cbind(SRT.merge[,2:12], SRT.merge[,22:35])
+length(SRT.vcf[1,]) #16 individuals in SRT dataset -- checks out (92-9 leading columns)
+SRT.names<-sub('\\.', '-', c(names(opSRT[2:9]),names(SRT.vcf[10:length(names(SRT.vcf))]))) #fix the formatting of the names to be consistent with keep_files
+final.SRT.names<-c("#CHROM", SRT.names)
+names(SRT.vcf)<-final.SRT.names
+head(SRT.vcf)
+## write it to file
+write.table(SRT.vcf, file="~/Desktop/D_variabilis_Pseudoref/Final_Analysis/Structure_by_Host_SRT/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_MERGED.vcf", quote=FALSE,
+            row.names=FALSE, sep="\t")
+
+## Take the final analysis SRT and HB and merge them together...
+
+## Final HB Only Analysis
+HB<-read.table('~/Desktop/UT_ddRADseq/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED.vcf', comment.char="", header=TRUE)
+
+## Final SRT Only Analysis
+SRT<-read.table('~/Desktop/D_variabilis_Pseudoref/Final_Analysis/Structure_by_Host_SRT/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_MERGED.vcf', comment.char="", header=TRUE)
+
+HB.sites<-paste(HB[,1], HB[,2], sep="_")
+HB.update<-cbind(HB, HB.sites)
+
+SRT.sites<-paste(SRT[,1], SRT[,2], sep="_")
+SRT.update<-cbind(SRT, SRT.sites)
+
+all.data.merge<-merge(HB.update, SRT.update, by.x="HB.sites", by.y="SRT.sites")
+
+# The merge process leaves us with a few redundant columns. Check column names to identify which columns can be removed
+names(all.data.merge)
+# Bind together only the necessary columns.
+all.data.vcf<-cbind(all.data.merge[,2:93], all.data.merge[,103:118])
+# Check that the number of columns with genotype data matches expectation
+length(all.data.vcf[1,]) #99 individuals in full data set -- checks out (108-9 leading columns)
+# The first 10 columns got renamed... return them to their original state
+final.names<-c("#CHROM", names(HB[2:9]), gsub("[.]", "-", names(all.data.vcf[10:length(names(all.data.vcf))])))
+names(all.data.vcf)<-final.names
+# How'd that work out?
+head(all.data.vcf) #seems ok!
+## write it file (output must be tab-separated)
+write.table(all.data.vcf, file="~/Desktop/D_variabilis_Pseudoref/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_only_maxmissing0.75_MERGED.vcf", quote=FALSE,
+            row.names=FALSE, sep="\t")
+
+#---------------------------------------------------------------------
+## Final for geographic analysis
 ## Raccoons and opossums from both sites (not hierarchically filtered)
 names(op.racc.merge)
 op.racc.vcf<-cbind(op.racc.merge[,2:41], op.racc.merge[,51:118])
