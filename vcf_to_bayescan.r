@@ -65,14 +65,14 @@ library(gplots)
 #names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 
 # unrelated ticks from SRT
-pop.1<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_SRT/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_MERGED_not_related_op_counts.frq.count', skip=1)
-pop.2<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_SRT/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_MERGED_not_related_racc_counts.frq.count', skip=1)
-names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
-names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
+#pop.1<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_SRT/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_MERGED_not_related_op_counts.frq.count', skip=1)
+#pop.2<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_SRT/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_MERGED_not_related_racc_counts.frq.count', skip=1)
+#names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
+#names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 
 # all ticks, all sites
-pop.1<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_maxmissing0.75_MERGED_not_related_op_counts.frq.count', skip=1)
-pop.2<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_maxmissing0.75_MERGED_not_related_racc_counts.frq.count', skip=1)
+pop.1<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_maxmissing0.75_MERGED_HB_counts.frq.count', skip=1)
+pop.2<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_maxmissing0.75_MERGED_SRT_counts.frq.count', skip=1)
 names(pop.1)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 names(pop.2)<-c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'ALLELE.COUNT.1', 'ALLELE.COUNT.2')
 
@@ -184,11 +184,39 @@ bs2.keep$X1<-seq(1,length(bs2.keep[,1]),1)
 #write.table(bs1.keep, file='~/Dropbox/ddRADseq/Final_Merged_Opossum', quote=FALSE, row.names=FALSE, col.names=FALSE)
 #write.table(bs2.keep, file='~/Dropbox/ddRADseq/Final_Merged_Raccoon', quote=FALSE, row.names=FALSE, col.names=FALSE)
 
-write.table(bs1.keep, file='~/Dropbox/ddRADseq/Final_not_related_Merged_Opossum', quote=FALSE, row.names=FALSE, col.names=FALSE)
-write.table(bs2.keep, file='~/Dropbox/ddRADseq/Final_not_relatedMerged_Raccoon', quote=FALSE, row.names=FALSE, col.names=FALSE)
+
+# HARRISON BAYOU, UNRELATED, FINAL
+#write.table(bs1.keep, file='~/Dropbox/ddRADseq/Final_not_related_Merged_Opossum', quote=FALSE, row.names=FALSE, col.names=FALSE)
+#write.table(bs2.keep, file='~/Dropbox/ddRADseq/Final_not_relatedMerged_Raccoon', quote=FALSE, row.names=FALSE, col.names=FALSE)
+
+# STARR RANCH TRAIL, UNRELATED, FINAL
+#write.table(bs1.keep, file='~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_SRT/Final_not_related_Merged_Opossum_SRT', quote=FALSE, row.names=FALSE, col.names=FALSE)
+#write.table(bs2.keep, file='~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_SRT/Final_not_related_Merged_Raccoon_SRT', quote=FALSE, row.names=FALSE, col.names=FALSE)
+
+# BOTH SITES, FINAL
+write.table(bs1.keep, file='~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Merged_HB', quote=FALSE, row.names=FALSE, col.names=FALSE)
+write.table(bs2.keep, file='~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Merged_SRT', quote=FALSE, row.names=FALSE, col.names=FALSE)
+
 
 
 ## Analysis 3/2015
+
+##########################
+# Final, Both Sites
+
+both<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Merged_Both_Sites_Bayescan_Input_fst.txt')
+plot(both$qval, both$fst, pch=16, col='gray', cex=1.5, cex.axis=1.5, xlim=c(0,1), 
+     ylim=c(0,0.15), bty='n', las=1, xlab='q-value', ylab="", cex.lab=1.5)
+
+
+##########################
+# Final, SRT unrelated
+
+SRT<-read.table('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_SRT/Final_not_related_Merged_SRT_Bayescan_Input_fst.txt')
+min(both$qval)
+plot(SRT$qval, SRT$fst, pch=16, col='gray', cex=1.5, cex.axis=1.5, xlim=c(0,1), 
+     ylim=c(0,0.15), bty='n', las=1, xlab='q-value', ylab="", cex.lab=1.5)
+
 
 ##########################
 # Final, HB unrelated
@@ -208,6 +236,17 @@ plot(density(bs.not.related$fst))
 median(bs.not.related$fst)
 min(bs.not.related$fst)
 max(bs.not.related$fst)
+
+##########################
+# Final, All analyses
+
+plot(both$qval, both$fst, pch=16, col='gray19', cex=1.5, cex.axis=1.5, xlim=c(0,1), 
+     ylim=c(0,0.15), bty='n', las=1, xlab='q-value', ylab="", cex.lab=1.5)
+points(SRT$qval, SRT$fst, pch=16, col='gray70', cex=1.5, cex.axis=1.5, xlim=c(0,1), 
+     ylim=c(0,0.15), bty='n', las=1, xlab='q-value', ylab="", cex.lab=1.5)
+points(bs.not.related$qval, bs.not.related$fst, pch=16, col='gray35', cex=1.5, cex.axis=1.5, xlim=c(0,1), 
+     ylim=c(0,0.04),bty='n', las=1, xlab='q-value', ylab="", cex.lab=1.5)
+
 
 ##########################
 
