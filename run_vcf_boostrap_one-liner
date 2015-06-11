@@ -1,0 +1,1 @@
+./run_VCF_bootstrap.sh 10 25 5 /home/antolinlab/Desktop/IDs.txt /home/antolinlab/Desktop/D_variabilis_Pseudoref/MasterPseudoRefVCF_Copy/pseudoref_mapped_genotypes.vcf /home/antolinlab/Desktop/snp_bootstrap_test.txt 
