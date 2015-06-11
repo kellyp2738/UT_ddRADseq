@@ -1,8 +1,8 @@
 # calculate significance of LD R^2 and make FDR correction
 
-library('fdrtools')
+library('fdrtool')
 
-options <- commandArgs()
+options <- commandArgs(TRUE)
 
 infile <- options[1]
 
