@@ -63,13 +63,16 @@ f.close()
 # call VCFtools with tmp.txt used as the "--keep" file
 my_env=os.environ.copy()
 # the arguments need to be fully separated for this to work (["--vcf", "/file/path/"], not ["--vcf /file/path/"])
-p = Popen(["vcftools", "--vcf", infile_VCF, "--keep", "/home/antolinlab/Desktop/tmp.txt", "--min-meanDP", "20", "--minGQ", "25", "--maf", "0.05", "--max-missing", max_missing, "--out", '/home/antolinlab/Desktop/vcf_tmp'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=my_env)
+p = Popen(["vcftools", "--vcf", infile_VCF, "--keep", "/home/antolinlab/Desktop/tmp.txt", "--min-meanDP", "20", "--minGQ", "25", "--maf", "0.05", "--max-missing", max_missing, "--recode", "--out", '/home/antolinlab/Desktop/vcf_tmp'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=my_env)
 
 # extract the number of SNPs retained
 stdout, stderr = p.communicate()
 split_stderr = str.splitlines(stderr)
 snp_line = split_stderr[15]
 snp_count = [int(s) for s in snp_line.split() if s.isdigit()][0] # split snp_line, search for integers, and save the first one found
+
+q = Popen(["vcftools", "--vcf", "/home/antolinlab/Desktop/vcf_tmp.recode.vcf", "--plink", "--out", "/home/antolinlab/Desktop/vcf_tmp_plink"])
+r = Popen(["Rscript", 
 
 # save the sample size and snp count
 write_line = [str(n), ",", str(snp_count), "\n"]
