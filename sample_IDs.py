@@ -17,6 +17,7 @@ if __name__ == '__main__':
 	parser.add_argument('-i', '--input_ID_file', help = 'Path to input ID file.')
 	parser.add_argument('-v', '--input_VCF_file', help = 'Path to input VCF file.')
 	parser.add_argument('-o', '--output', help = 'Path to output SNP count file.')
+	parser.add_argument('-m', '--max_missing', help = 'Max-missing parameter for VCFtools.')
 
 	opts = parser.parse_args()
 
@@ -26,6 +27,7 @@ n=int(opts.subsample_size) # total number of ticks
 infile_ID = opts.input_ID_file
 infile_VCF = opts.input_VCF_file
 outfile = opts.output
+max_missing = opts.max_missing
 
 # open the file of tick IDs that will be sampled
 id_file=open(infile_ID, 'r')
@@ -61,7 +63,7 @@ f.close()
 # call VCFtools with tmp.txt used as the "--keep" file
 my_env=os.environ.copy()
 # the arguments need to be fully separated for this to work (["--vcf", "/file/path/"], not ["--vcf /file/path/"])
-p = Popen(["vcftools", "--vcf", infile_VCF, "--keep", "/home/antolinlab/Desktop/tmp.txt", "--min-meanDP", "20", "--minGQ", "25", "--maf", "0.05", "--max-missing", "0.75", "--out", '/home/antolinlab/Desktop/vcf_tmp'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=my_env)
+p = Popen(["vcftools", "--vcf", infile_VCF, "--keep", "/home/antolinlab/Desktop/tmp.txt", "--min-meanDP", "20", "--minGQ", "25", "--maf", "0.05", "--max-missing", max_missing, "--out", '/home/antolinlab/Desktop/vcf_tmp'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=my_env)
 
 # extract the number of SNPs retained
 stdout, stderr = p.communicate()
