@@ -9,6 +9,7 @@
 # $4 = -i; input ID file to permute
 # $5 = -v; input VCF file to sample
 # $6 = -o; output data file
+# $7 = -m; max_missing for VCFtools
 
 # check that output file does not already exist
 # if it does exist, should it be overwritten?
@@ -35,7 +36,7 @@ do
 	for k in `seq 1 $3`; # sample $n $3 times
 	do
 		#echo $j
-		python sample_IDs.py -n $j -i $4 -v $5 -o $6
+		python sample_IDs.py -n $j -i $4 -v $5 -o $6 -m $7
 	done
 done
 
