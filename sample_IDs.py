@@ -71,8 +71,15 @@ split_stderr = str.splitlines(stderr)
 snp_line = split_stderr[15]
 snp_count = [int(s) for s in snp_line.split() if s.isdigit()][0] # split snp_line, search for integers, and save the first one found
 
+# convert the VCF file to a PLINK file
 q = Popen(["vcftools", "--vcf", "/home/antolinlab/Desktop/vcf_tmp.recode.vcf", "--plink", "--out", "/home/antolinlab/Desktop/vcf_tmp_plink"])
-r = Popen(["Rscript", 
+
+plink --file vcf_tmp_plink --matrix
+plink --file vcf_tmp_pling --inter-chr
+
+# PLINK files have extra spaces to make them human readable... remove those spaces for R import
+sed -E 's|  *| |g' plink.ld > plink_edit.ld
+r = Popen(["Rscript", "plink_edit.ld"])
 
 # save the sample size and snp count
 write_line = [str(n), ",", str(snp_count), "\n"]
