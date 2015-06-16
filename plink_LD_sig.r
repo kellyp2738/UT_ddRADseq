@@ -21,5 +21,3 @@ sig.ld <- subset(ld, q < 0.05 & R2 > 0.8)
 num.sig <- length(sig.ld[,1])
 
 print(c(length(ld$p), num.sig)) # this should end up putting the number of sig. LD pairs in std. error output that Python can parse
-
-## WHY DO I ONLY GET 84 PAIRWISE RESULTS FOR LD FROM PLINK??
