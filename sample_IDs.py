@@ -68,25 +68,34 @@ p = Popen(["vcftools", "--vcf", infile_VCF, "--keep", "/home/antolinlab/Desktop/
 # extract the number of SNPs retained
 stdout, stderr = p.communicate()
 split_stderr = str.splitlines(stderr)
-snp_line = split_stderr[15]
+snp_line = split_stderr[17]
 snp_count = [int(s) for s in snp_line.split() if s.isdigit()][0] # split snp_line, search for integers, and save the first one found
 
+# Plink expects human data and doesn't like chromosome numbers > 22. We don't know the chromosome structure, so replace all the chromosome names with "1"
+# first get rid of the text in the fragment ID
+subprocess.call("sed 's|_pseudoreference_pe_concatenated_without_rev_complement||g' /home/antolinlab/Desktop/vcf_tmp.recode.vcf > /home/antolinlab/Desktop/vcf_chrom_rename.vcf", shell=True)
+# second, find the fragment number and replace it with a 1
+subprocess.call("sed -r 's/^[0-9]+/1/' /home/antolinlab/Desktop/vcf_chrom_rename.vcf > /home/antolinlab/Desktop/vcf_chrom_rename_2.vcf", shell=True)
+# now the SNP IDs are not unique... fix it with more sed and some R
+subprocess.call("sed 's|#CHROM|CHROM|' /home/antolinlab/Desktop/vcf_chrom_rename_2.vcf > /home/antolinlab/Desktop/vcf_chrom_rename_3.vcf", shell=True)
+subprocess.call("Rscript fix_vcf_pos.r /home/antolinlab/Desktop/vcf_chrom_rename_3.vcf /home/antolinlab/Desktop/vcf_chrom_rename_final.vcf", shell = True) # this will replace the "POS" column in the VCF file with consecutive numbers
+
 # convert the VCF file to a PLINK file
-subprocess.call("vcftools --vcf /home/antolinlab/Desktop/vcf_tmp.recode.vcf --plink --out /home/antolinlab/Desktop/vcf_tmp_plink", shell=True)
+subprocess.call("vcftools --vcf /home/antolinlab/Desktop/vcf_chrom_rename_final.vcf --plink --out /home/antolinlab/Desktop/vcf_tmp_plink", shell=True)
 
 # calculate LD on the plink file
-# subprocess.call("plink --file vcf_tmp_plink --matrix", shell=True) # option A: pairwise matrix
-#subprocess.call("plink --file /home/antolinlab/Desktop/vcf_tmp_plink --ld --inter-chr --allow-no-sex --noweb", shell=True) # option B: long-format list
-subprocess.call("plink --file /home/antolinlab/Desktop/vcf_tmp_plink --r2 --inter-chr --noweb", shell=True) # option B: long-format list
+#subprocess.call("plink --file /home/antolinlab/Desktop/vcf_tmp_plink --r2 --matrix --noweb", shell=True) # option A: pairwise matrix
+subprocess.call("plink --file /home/antolinlab/Desktop/vcf_tmp_plink --r2 --inter-chr --allow-no-sex --ld-window-r2 0 --noweb", shell=True) # option B: long-format list
 
-# PLINK files have extra spaces to make them human readable... remove those spaces for R import
+# PLINK long-form files have extra spaces to make them human readable... remove those spaces for R import
 subprocess.call("sed -E 's|  *| |g' plink.ld > plink_edit-2.ld", shell=True)
 r = Popen(["Rscript", "plink_LD_sig.r", "plink_edit-2.ld"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 outs, errs = r.communicate()
-#split_stderr_r = str.splitlines(stderr_r)
-print outs, errs
-snp_pairs = split_stderr_r[1]
-sig_pairs = split_stderr_r[2]
+out_split = str.splitlines(outs) #out contains some FDRtools outputs and the numbers we're interested in
+values = out_split[5] # our numbers of interest are in line 5
+values_split = str.split(values) # split line 5 into its components
+snp_pairs = values_split[1] # number of snp pairs (should be equal to number of snps ^2)
+sig_pairs = values_split[2] # number of snp pairs with R2 > 0.8 and a significant q value
 
 # save the sample size and snp count
 write_line = [str(n), ",", str(snp_count), ",", str(snp_pairs), ",", str(sig_pairs), "\n"]
