@@ -88,6 +88,7 @@ open(genoData)
 
 ## reopen data
 snpgdsClose(genofile)
+setwd('~/')
 genofile<-snpgdsOpen('snps_all_again2.gds', allow.duplicate=TRUE) #in /Users/kelly
 
 #genofile <- snpgdsOpen(snpgdsExampleFileName())
@@ -113,11 +114,46 @@ snpgdsFst(genofile, population=getScanVariable(genoData, "pop.group"), method="W
 #not LD pruned
 ibd<-snpgdsIBDMLE(genofile, autosome.only=FALSE, kinship=TRUE) 
 ibd.coeff<-snpgdsIBDSelection(ibd)
-write.table(ibd.coeff, file='~/Desktop/D_variabilis_Pseudoref/identity_by_descent_HB.txt',
-            quote=FALSE, row.names=FALSE) #since moved; see file path below
-ibd.coeff<-read.table(file='~/Desktop/')
+write.table(ibd.coeff, file='~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/ibd_coeff_both_sites.csv',
+              sep=',', quote=FALSE, row.names=FALSE) #since moved; see file path below
+
+ibd.edit<-read.csv(file='~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/ibd_coeff_both_sites_edit.csv') # contains column with 0=diff host, 1=same host
+ibd.model<-glm(ibd.edit$same.host ~ ibd.edit$kinship, family=binomial)
+ibd.model2<-glm(ibd.edit$kinship ~ ibd.edit$same.host)
 plot(ibd.coeff$k0, ibd.coeff$k1, xlim=c(0,1), ylim=c(0,1))
 plot(ibd$kinship, pch=16, col=alpha('blue', 0.25), xlim=c(0,1), ylim=c(0,1))
+same.host<-subset(ibd.edit, same.host==1)
+mean(same.host$kinship)
+diff.host<-subset(ibd.edit, same.host==0)
+mean(diff.host$kinship)
+
+ibd.sample.idx<-sample.int(length(ibd.edit[,1]), 1000)
+
+ibd.resample.glm<-function(data, n){
+  idx<-sample.int(length(data[,1]), n)
+  data.sample<-data[idx,]
+  model<-glm(data.sample$same.host ~ data.sample$kinship, family=binomial)
+  return(model)
+}
+
+coeffs<-c()
+sig<-c()
+for(i in 1:1000){
+  temp<-ibd.resample.glm(ibd.edit, 2000)
+  coeffs<-c(coeffs, coef(summary(temp))[,1][[2]])
+  sig<-c(sig, coef(summary(temp))[,4][[2]])
+}
+
+plot(coeffs, sig, col=alpha('black', 0.25), xlim=c(-15, 25),
+     pch=16, axes=FALSE, xlab='Model Coefficient', ylab='p-value')
+points(coef(summary(ibd.model))[,1][[2]], coef(summary(ibd.model))[,4][[2]], 
+       col='red', pch=16)
+abline(h=0.05, lty=3)
+axis(side=1, at=seq(-15, 25, 5))
+axis(side=2, las=1)
+
+fraction.sig<-length(sig[which(sig<0.05)])/length(sig)
+
 related<-ibd.coeff[which(ibd.coeff$kinship>=1/16),]
 related.unique<-unique(c(related$ID1, related$ID2))
 ibd.thresholds<-c(0,1/16,1/8,1/4,1/2) #color by relatedness (0-1/16=unrelated, 1/16-1/8=first cousins, 1/8-1/4=half sibs or dbl first cousisn, 1/4-1/2=parent/child or full sibs, 1/2=identical)
@@ -198,7 +234,7 @@ write.table(vcf.fix, file='/home/antolinlab/Desktop/D_variabilis_Pseudoref/Final
 gds.ticks<-"snps_fixed.gds"
 #snpgdsVCF2GDS('/home/antolinlab/Desktop/D_variabilis_Pseudoref/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_chromFix.vcf', 
 #              gds.ticks, verbose=FALSE)
-snpgdsVCF2GDS('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_chromFix.vcf', 
+snpgdsVCF2GDS('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_HB/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_HB_only_maxmissing0.75_MERGED_chromFix.vcf', 
               gds.ticks, verbose=FALSE)
 (gds<-GdsGenotypeReader(gds.ticks))
 getScanID(gds) #check IDs
@@ -240,20 +276,20 @@ ibd<-snpgdsIBDMLE(genofile, autosome.only=FALSE, kinship=TRUE)
 ibd.coeff<-snpgdsIBDSelection(ibd)
 write.table(ibd.coeff, file='~/Desktop/D_variabilis_Pseudoref/identity_by_descent_HB.txt',
             quote=FALSE, row.names=FALSE) #since moved; see file path below
-ibd.coeff<-read.table(file='~/Desktop/')
+ibd.coeff<-read.table(file='~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_HB/identity_by_descent_HB.txt', header=TRUE)
 plot(ibd.coeff$k0, ibd.coeff$k1, xlim=c(0,1), ylim=c(0,1))
 plot(ibd$kinship, pch=16, col=alpha('blue', 0.25), xlim=c(0,1), ylim=c(0,1))
 related<-ibd.coeff[which(ibd.coeff$kinship>=1/16),]
-related.unique<-unique(c(related$ID1, related$ID2))
-ibd.thresholds<-c(0,1/16,1/8,1/4,) #color by relatedness (0-1/16=unrelated, 1/16-1/8=first cousins, 1/8-1/4=half sibs or dbl first cousisn, 1/4-1/2=parent/child or full sibs, 1/2=identical)
-tick.names<-gsub(pattern="_.*", replacement="", unique(c(ibd.coeff$ID1, ibd.coeff$ID2)), perl=TRUE)
-pdf(file='~/Desktop/D_variabilis_Pseudoref/kinship_estimates_IBD_HB.pdf', height=30/2.54, width=30/2.54)
+related.unique<-unique(c(as.character(related$ID1), as.character(related$ID2)))
+ibd.thresholds<-c(0,1/16,1/8,1/4,1/2) #color by relatedness (0-1/16=unrelated, 1/16-1/8=first cousins, 1/8-1/4=half sibs or dbl first cousisn, 1/4-1/2=parent/child or full sibs, 1/2=identical)
+tick.names<-gsub(pattern="_.*", replacement="", unique(c(as.character(ibd.coeff$ID1), as.character(ibd.coeff$ID2))), perl=TRUE)
+pdf(file='~/Dropbox/ddRADseq/Final_Plots_April_2015/kinship_estimates_IBD_HB.pdf', height=30/2.54, width=30/2.54)
 par(mar=c(6,6,4,10), xpd=TRUE)
-image(x=1:ncol(ibd$kinship), y=1:ncol(ibd$kinship), z=ibd$kinship, col=brewer.pal(4, 'Blues'), 
+image(x=1:ncol(ibd$kinship), y=1:ncol(ibd$kinship), z=ibd$kinship, col=brewer.pal(4, 'Greys'), 
       breaks=ibd.thresholds, axes=FALSE, xlab="", ylab="")
 mtext(side=1, line=1, text=tick.names, at=1:ncol(ibd$kinship), las=2, cex=0.5)
 mtext(side=2, line=1, text=tick.names, at=1:ncol(ibd$kinship), las=2, cex=0.5)
-legend(x=85, y=50, , fill=brewer.pal(4, 'Blues'),
+legend(x=85, y=50, , fill=brewer.pal(4, 'Greys'),
        legend=c('0-1/16', '1/16-1/8', '1/8-1/4', '1/4-1/2'),
        #legend=c('unrelated', 'first cousins', 'half-siblings', 'parent-child or full siblings', 'identical'),
        bty='n', border='white', title='Kinship \nCoefficient')
@@ -325,7 +361,7 @@ write.table(vcf.SRT.fix, file='/home/antolinlab/Desktop/D_variabilis_Pseudoref/F
 
 ## read in edited file
 gds.SRT.ticks<-"snps_SRT.gds"
-snpgdsVCF2GDS('/home/antolinlab/Desktop/D_variabilis_Pseudoref/Final_Analysis/Structure_by_Host_SRT/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_MERGED_chromFix.vcf', 
+snpgdsVCF2GDS('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_SRT/Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_SRT_only_maxmissing0.75_MERGED_chromFix.vcf', 
               gds.SRT.ticks, verbose=FALSE)
 (gds<-GdsGenotypeReader(gds.SRT.ticks))
 getScanID(gds) #check IDs
@@ -367,20 +403,20 @@ ibd<-snpgdsIBDMLE(genofile, autosome.only=FALSE, kinship=TRUE)
 ibd.coeff<-snpgdsIBDSelection(ibd)
 write.table(ibd.coeff, file='~/Desktop/D_variabilis_Pseudoref/Final_Analysis/Structure_by_Host_SRT/identity_by_descent_SRT.txt',
             quote=FALSE, row.names=FALSE)
-ibd.coeff<-read.table(file='~/Desktop/D_variabilis_Pseudoref/Final_Analysis/Structure_by_Host_SRT/identity_by_descent_SRT.txt', header=TRUE)
+ibd.coeff<-read.table(file='~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Host_SRT/identity_by_descent_SRT.txt', header=TRUE)
 plot(ibd.coeff$k0, ibd.coeff$k1, xlim=c(0,1), ylim=c(0,1))
 plot(ibd$kinship, pch=16, col=alpha('blue', 0.25), xlim=c(0,1), ylim=c(0,1))
 related<-ibd.coeff[which(ibd.coeff$kinship>=1/16),]
-related.unique<-unique(c(related$ID1, related$ID2))
+related.unique<-unique(c(as.character(related$ID1), as.character(related$ID2)))
 ibd.thresholds<-c(0,1/16,1/8,1/4,1/2) #color by relatedness (0-1/16=unrelated, 1/16-1/8=first cousins, 1/8-1/4=half sibs or dbl first cousisn, 1/4-1/2=parent/child or full sibs, 1/2=identical)
 tick.names<-gsub(pattern="_.*", replacement="", ibd$sample.id, perl=TRUE) #unique(c(as.character(ibd.coeff$ID1, ibd.coeff$ID2)))
 pdf(file='~/Dropbox/ddRADseq/Final_Plots_April_2015/kinship_estimates_IBD_SRT.pdf', height=30/2.54, width=30/2.54)
 par(mar=c(6,6,4,10), xpd=TRUE)
-image(x=1:ncol(ibd$kinship), y=1:ncol(ibd$kinship), z=ibd$kinship, col=brewer.pal(4, 'Blues'), 
+image(x=1:ncol(ibd$kinship), y=1:ncol(ibd$kinship), z=ibd$kinship, col=brewer.pal(4, 'Greys'), 
       breaks=ibd.thresholds, axes=FALSE, xlab="", ylab="")
 mtext(side=1, line=1, text=tick.names, at=1:ncol(ibd$kinship), las=2)
 mtext(side=2, line=1, text=tick.names, at=1:ncol(ibd$kinship), las=2)
-legend(x=17, y=10, , fill=brewer.pal(4, 'Blues'),
+legend(x=17, y=10, , fill=brewer.pal(4, 'Greys'),
        legend=c('0-1/16', '1/16-1/8', '1/8-1/4', '1/4-1/2'),
        #legend=c('unrelated', 'first cousins', 'half-siblings', 'parent-child or full siblings', 'identical'),
        bty='n', border='white', title='Kinship \nCoefficient')
