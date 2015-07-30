@@ -42,12 +42,22 @@ max(bs.not.related$fst)
 ##########################
 # Final, All analyses
 
+pdf(file='~/Dropbox/ddRADseq/Final_Plots_April_2015/All_fst_outlier.pdf', height=10/2.54, width=15/2.54)
+par(mar=c(6,6,2,2))
 plot(both$qval, both$fst, pch=16, col='gray19', cex=1.5, cex.axis=1.5, xlim=c(0,1), 
      ylim=c(0,0.15), bty='n', las=1, xlab='q-value', ylab="", cex.lab=1.5)
 points(SRT$qval, SRT$fst, pch=16, col='gray70', cex=1.5, cex.axis=1.5, xlim=c(0,1), 
        ylim=c(0,0.15), bty='n', las=1, xlab='q-value', ylab="", cex.lab=1.5)
 points(bs.not.related$qval, bs.not.related$fst, pch=16, col='gray35', cex=1.5, cex.axis=1.5, xlim=c(0,1), 
        ylim=c(0,0.04),bty='n', las=1, xlab='q-value', ylab="", cex.lab=1.5)
+mtext(text=expression('F'[ST]), side=2, line=4.3, cex=1.5)
+legend(x='topleft', legend=c('HB vs SRT', 'O vs R, HB', 'O vs R, SRT'),
+       fill=c('gray19', 'gray35', 'gray70'), bty='n')
+dev.off()
+
+summary(both$fst)
+summary(SRT$fst)
+summary(bs.not.related$fst)
 
 ###########################
 # Overlap b/t samples
@@ -84,4 +94,12 @@ plot.new()
 draw.pairwise.venn(area1=length(HB.id), area2=length(SRT.id), cross.area=2387,
                    category=c('HB', 'SRT'),
                    fill=c(alpha('gray19', 0.75), alpha('gray70', 0.75)), lwd=0 )
+dev.off()
+
+pdf(file='~/Dropbox/ddRADseq/Final_Plots_April_2015/Shared_SNPs_By_Site_recolor.pdf',
+    height=10/2.54, width=10/2.54)
+plot.new() #make plot with yellow circles for figure
+draw.pairwise.venn(area1=length(HB.id), area2=length(SRT.id), cross.area=2387,
+                   category=c('', ''), inverted=TRUE, fontfamily='sans',
+                   fill=c(alpha('#fec44f', 0.75), alpha('#fec44f', 0.75)), lwd=1)
 dev.off()
