@@ -14,14 +14,15 @@ infile<-args[1]
 # read in the snp data file
 data<-read.table(infile, header=FALSE)
 
-data<-read.csv('~/Desktop/snp_bootstrap_final.txt', header=FALSE)
+data<-read.csv('~/Desktop/UT_ddRADseq/snp_bootstrap_final.txt', header=FALSE)
 names(data)<-c('n', 'snps')
 
 # create a boxplot that also displays the raw data (jittered on x-axis)
 #png(file='~/Dropbox/ddRADseq/Final_Analysis/vcf_bootstrap_sampleSize.png', height=20, width=30, unit='cm', res=300)
 pdf(file='~/Dropbox/ddRADseq/Final_Analysis/vcf_bootstrap_sampleSize.pdf', height=20/2.56, width=30/2.54)
-par(mar=c(5,5,1,1))
-plot(x=NULL, y=NULL, xlim=c(0,75), ylim=c(4000,20000), axes=FALSE, xlab="", ylab="")
+par(mfrow=c(1,1), mar=c(5,5,2,1))
+plot(x=NULL, y=NULL, xlim=c(0,75), ylim=c(4000,20000), axes=FALSE, xlab="", ylab="",
+     main='75% Fragment Representation')
 for(i in 1:((max(data$n)-min(data$n))+1)){
   n.data<-subset(data, n==unique(data$n)[i])
   points(jitter(rep(i, length(n.data$n)), amount=0.1), n.data$snps, pch=16, col=alpha('olivedrab4', 0.25))
@@ -112,13 +113,50 @@ aov(nsl1, nls2)
 
 ### max-missing = 50%
 
-data1<-read.csv('~/Desktop/snp_bootstrap_max_missing_0.5.txt', header=FALSE)
-data2<-read.csv('~/Desktop/snp_bootstrap_max_missing_0.5_2.txt', header=FALSE)
-data3<-read.csv('~/Desktop/snp_bootstrap_max_missing_0.5_3.txt', header=FALSE)
-data4<-read.csv('~/Desktop/snp_bootstrap_max_missing_0.5_4.txt', header=FALSE)
+data1<-read.csv('~/Desktop/UT_ddRADseq/snp_bootstrap_max_missing_0.5.txt', header=FALSE)
+data2<-read.csv('~/Desktop/UT_ddRADseq/snp_bootstrap_max_missing_0.5_2.txt', header=FALSE)
+data3<-read.csv('~/Desktop/UT_ddRADseq/snp_bootstrap_max_missing_0.5_3.txt', header=FALSE)
+data4<-read.csv('~/Desktop/UT_ddRADseq/snp_bootstrap_max_missing_0.5_4.txt', header=FALSE)
 full.data<-rbind(data1, data2, data3, data4)
 names(full.data)<-c('n', 'snps')
 boxplot(full.data$snps ~ full.data$n)
 
 #png(file='~/Dropbox/ddRADseq/Final_Analysis/vcf_bootstrap_sampleSize_maxmissing_0.5.png', height=20, width=30, unit='cm', res=300)
-  
+png(file='~/Dropbox/ddRADseq/Final_Analysis/vcf_bootstrap_sampleSize_50_75_two_panels.png', height=40, width=30, unit='cm', res=300)
+
+par(mfrow=c(2,1), mar=c(5,5,2,1))
+plot(x=NULL, y=NULL, xlim=c(0,75), ylim=c(4000,20000), axes=FALSE, xlab="", ylab="",
+     main='75% Fragment Representation', cex.main=1.5)
+for(i in 1:((max(data$n)-min(data$n))+1)){
+  n.data<-subset(data, n==unique(data$n)[i])
+  points(jitter(rep(i, length(n.data$n)), amount=0.1), n.data$snps, pch=16, col=alpha('olivedrab4', 0.25))
+}
+boxplot(snps~n, data=data, axes=FALSE, add=TRUE, col=alpha('white', 0),
+        ylim=c(round_any(min(data$snps), 1000, f=floor), 
+               round_any(max(data$snps), 1000, f=ceiling)),
+        ylab='SNPs Recovered (1000s)', xlab='Sample Size', cex.lab=1.5)
+
+axis(side=1, cex.axis=1.5, at=seq(1, length(unique(data$n)), 5), labels=seq(10, 75, 5))
+axis(side=2, las=1, at=seq(round_any(min(data$snps), 1000, f=floor), 
+                           round_any(max(data$snps), 1000, f=floor)+1000, 1000),
+     labels=seq(round_any(min(data$snps), 1000, f=floor), 
+                round_any(max(data$snps), 1000, f=floor)+1000, 1000)/1000, cex.axis=1.5)
+
+plot(x=NULL, y=NULL, xlim=c(0,75), ylim=c(8000, 28000), axes=FALSE, xlab="", ylab="",
+     main='50% Fragment Representation', cex.main=1.5)
+for(i in 1:((max(full.data$n)-min(full.data$n))+1)){
+  full.n.data<-subset(full.data, n==unique(full.data$n)[i])
+  points(jitter(rep(i, length(full.n.data$n)), amount=0.1), full.n.data$snps, pch=16, col=alpha('olivedrab3', 0.25))
+}
+boxplot(snps~n, data=full.data, axes=FALSE, add=TRUE, col=alpha('white', 0),
+        ylim=c(round_any(min(full.data$snps), 1000, f=floor), 
+               round_any(max(full.data$snps), 1000, f=ceiling)),
+        ylab='SNPs Recovered (1000s)', xlab='Sample Size', cex.lab=1.5)
+
+axis(side=1, cex.axis=1.5, at=seq(1, length(unique(full.data$n)), 5), labels=seq(10, 75, 5))
+axis(side=2, las=1, at=seq(round_any(min(full.data$snps), 1000, f=floor), 
+                           round_any(max(full.data$snps), 1000, f=floor)+1000, 1000),
+     labels=seq(round_any(min(full.data$snps), 1000, f=floor), 
+                round_any(max(full.data$snps), 1000, f=floor)+1000, 1000)/1000, cex.axis=1.5)
+
+dev.off()
