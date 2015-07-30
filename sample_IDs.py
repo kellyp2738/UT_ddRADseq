@@ -81,6 +81,17 @@ for n in range(min_ticks, (max_ticks+1)):
 		snp_line = split_stderr[17]
 		snp_count = [int(s) for s in snp_line.split() if s.isdigit()][0] # split snp_line, search for integers, and save the first one found
 
+		vcf_call = "vcftools --vcf /home/antolinlab/Desktop/vcf_chrom_rename_final.vcf --plink --out /home/antolinlab/Desktop/vcf_tmp_plink"
+		processList = []
+			for i in xrange(0,10):
+				proc = Popen(args(i))
+				processList.append(proc)
+			for proc in processList:
+				stdout, stderr = proc.communicate()
+				with file as open(file,'w'):
+					file.write(stdout + os.endl)
+
+
 		# Plink expects human data and doesn't like chromosome numbers > 22. We don't know the chromosome structure, so replace all the chromosome names with "1"
 		# first get rid of the text in the fragment ID
 		subprocess.call("sed 's|_pseudoreference_pe_concatenated_without_rev_complement||g' /home/antolinlab/Desktop/vcf_tmp.recode.vcf > /home/antolinlab/Desktop/vcf_chrom_rename.vcf", shell=True)
@@ -90,6 +101,9 @@ for n in range(min_ticks, (max_ticks+1)):
 		subprocess.call("sed 's|#CHROM|CHROM|' /home/antolinlab/Desktop/vcf_chrom_rename_2.vcf > /home/antolinlab/Desktop/vcf_chrom_rename_3.vcf", shell=True)
 		subprocess.call("Rscript fix_vcf_pos.r /home/antolinlab/Desktop/vcf_chrom_rename_3.vcf /home/antolinlab/Desktop/vcf_chrom_rename_final.vcf", shell = True) # this will replace the "POS" column in the VCF file with consecutive numbers
 
+		# make a "snps" file with 500 unique SNPs for LD stats
+
+		# 1. get SNP IDs from vcf file
 		# convert the VCF file to a PLINK file
 		subprocess.call("vcftools --vcf /home/antolinlab/Desktop/vcf_chrom_rename_final.vcf --plink --out /home/antolinlab/Desktop/vcf_tmp_plink", shell=True)
 
@@ -104,17 +118,17 @@ for n in range(min_ticks, (max_ticks+1)):
 		# convert to long form without loading the whole matrix into memory... the resulting long form should fit in memory
 
 		i = 0 # start line counter
-		with io.open('plink.ld') as f:
+		with open('plink.ld') as f:
 			for line in f: # read file line by line
 				b=(line.split())[i:snp_count] # get the upper triangle
 				i += 1 # increase the counter
 				for j in b:
-					print j
+					#print j
 					if j != 'nan':
-						p = chisqprob((j*22),1)
-						print p
+						p = chisqprob((float(j)*22),1)
+						#print p
 						with open('long_plink_pval.ld', 'a') as c:
-							c.write(p + '\n')
+							c.write(str(p) + '\n')
 
 '''
 r = Popen(["Rscript", "plink_LDmatrix_sig.r", "plink.ld"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
