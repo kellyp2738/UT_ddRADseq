@@ -19,7 +19,30 @@ infile <- options[1]
 
 N <- 22 # number chromosomes in D. variabilis
 
+# simulate a small test dataset
+v<-runif(15000)
+test.data<-data.frame(matrix(v/10, nrow=3000, ncol=5))
+test.chisq<-apply(test.data, 1:2, function(x) x*22) # convert to chi square test statistics
+test.chisq.p<-apply(test.chisq, 1:2, function(x) pchisq(x, df=1, lower.tail=FALSE)) # calculate p values
+test.chisq.p[!is.finite(test.chisq.p)] <- NA # convert inf to NA
+qv.matrix<-data.frame(matrix(data=NA, nrow=dim(test.chisq.p)[1], ncol=dim(test.chisq.p)[2]))
+fraction.sig<-c()
+for(col in 1:length(test.chisq.p[1,])){
+  #print(col)
+  col.data<-test.chisq.p[,col]
+  complete.data<-col.data[complete.cases(col.data)]
+  #print(length(complete.data))
+  #intermediate<-apply(test.chisq.p, 1:2, function(x) qvalue(col.data))
+  qv.matrix[,col]<-qvalue(complete.data)$qvalues
+  fraction.sig<-c(fraction.sig, length(qv.matrix[qv.matrix[,col]<0.028,col])/length(col.data))
+}
+
 # read data
+ld.matrix <- read.table(infile)
+ld.matrix <- read.table("~/Desktop/UT_ddRADseq/long_plink_pval.ld")
+
+## OLD: TESTING BIG DATA FORMATS AND TIMING LOADING OPERATIONS ##
+
 ld.matrix <- read.table(infile)
 ld.matrix <- read.table("~/Desktop/UT_ddRADseq/long_plink_pval.ld")
 ld.matrix <- read.table.ffdf(file="~/Desktop/UT_ddRADseq/long_plink_pval.ld")
