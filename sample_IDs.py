@@ -115,8 +115,18 @@ for n in range(min_ticks, (max_ticks+1)):
 		#subprocess.call("sed -E 's|  *| |g' plink.ld > plink_edit-2.ld", shell=True)
 
 		# for option A (matrix), the plink file is often too big to be handled by R.
+		# get the upper triangle from the matrix, convert to a vector, and take random subsamples of the data
+		with open('plink.ld') as f:
+			vector = f[np.triu_indices(f.shape[1], k=1])
+			resample = np.zeros((10, 3000))
+			for s in xrange(10):
+				sample = np.random.choice(vector, size=3000)	
+				resample[s] = sample # add the resampled data to a new row
+		save_name = '/home/antolinlab/Desktop' + outfile + time.strftime('%Y-%m-%d %H-%M") + "_" + str(int(np.random.uniform(100,1000)))
+		np.savetxt(fname=save.name, resample, delimiter=',')
+		
 		# convert to long form without loading the whole matrix into memory... the resulting long form should fit in memory
-
+		'''
 		i = 0 # start line counter
 		with open('plink.ld') as f:
 			for line in f: # read file line by line
@@ -129,6 +139,7 @@ for n in range(min_ticks, (max_ticks+1)):
 						#print p
 						with open('long_plink_pval.ld', 'a') as c:
 							c.write(str(p) + '\n')
+		'''
 
 '''
 r = Popen(["Rscript", "plink_LDmatrix_sig.r", "plink.ld"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
