@@ -9,6 +9,7 @@ import sys
 import io
 from scipy.stats import chisqprob
 from operator import itemgetter
+import csv
 
 # line for profiling system usage
 # python -m cProfile sample_IDs.py -min 10 -max 10 -r 1 -i /home/antolinlab/Desktop/IDs.txt -v /home/antolinlab/Desktop/D_variabilis_Pseudoref/MasterPseudoRefVCF_Copy/pseudoref_mapped_genotypes.vcf -o /home/antolinlab/Desktop/snp_bootstrap_test2.txt -m 0.75
@@ -140,30 +141,28 @@ for n in range(min_ticks, (max_ticks+1)):
 	# the code chunk below relates the index with respect to the full upper triangle 
 	# (corresponding to data we want) with the indexes assigned each row as it is read into memory
         
+	save_name = '/home/antolinlab/Desktop/' + str(n) + "_" + 'retained_plink_R2.csv'   
+	print 'Resampling LD stats'
 	for ldResample in range(10):
-		print 'Resampling LD stats'
-		# pre-select values to save
-		idxSave = np.random.choice(range(snp_count), size=3000)
-		idxSave.sort()
-	    i = 1 # start line counter
+		idxSave = np.random.choice(range(snp_count), size=30, replace=False)
+		i = 1 # start line counter
 		s = 0 # start SNP counter
-		#keepSNPsList = []
-	    with open('plink.ld') as f:
-	        save_name = '/home/antolinlab/Desktop/' + "_" + str(n) + "_" + 'retained_plink_R2.ld'   
-			print save_name			
+		with open('plink.ld') as f:		
 			for line in f: # read file line by line
-				#keepSNPs = [] # clear the list                
 				rowData = (line.split())[i:snp_count] # get the upper triangle
-				trueIdx = range(s, s+len(rowData)-1) # get the index w/respect to complete upper triangle (not just the current row loaded)
+				trueIdx = range(s, s+len(rowData)-1) # get the index w/respect to complete upper triangle (not just the current row loaded)					keepTrueIdx = list(set(trueIdx) & set(idxSave)) # find the intersection between what we have loaded and what we'd like to keep
 				keepTrueIdx = list(set(trueIdx) & set(idxSave)) # find the intersection between what we have loaded and what we'd like to keep
-				assert(len(trueIdx) > 0)
 				i += 1 # increase the line counter
 				s = s + len(rowData) # increase the SNP counter
-				for ti in keepTrueIdx:				
-					keepRowIdx = trueIdx.index(ti)	# the index of trueIdx will correspond to the index of rowData. look up the index of the keepTrueIndexes (not very pythonic, but so goes it)			
-					saveR2 = rowData[keepRowIdx]					
-					with open(save_name, 'a') as c:
-						c.write(str(ldResample) + str(saveR2) + '\n')
+				if len(keepTrueIdx) > 0:
+					for ti in keepTrueIdx:				
+						keepRowIdx = trueIdx.index(ti)	# the index of trueIdx will correspond to the index of rowData. look up the index of the keepTrueIndexes (not very pythonic, but so goes it)			
+						saveR2 = rowData[keepRowIdx]
+						write_str = str(ldResample) + ',' + str(saveR2)					
+						with open(save_name, 'a') as c:
+							ldWriter = csv.writer(c, delimiter=',')
+							ldWriter.writerow([str(ldResample)] + [str(saveR2)])
+
 
 '''
 r = Popen(["Rscript", "plink_LDmatrix_sig.r", "plink.ld"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
