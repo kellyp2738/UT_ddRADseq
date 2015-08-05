@@ -8,6 +8,7 @@ import os, os.path
 import sys
 import io
 from scipy.stats import chisqprob
+from operator import itemgetter
 
 # line for profiling system usage
 # python -m cProfile sample_IDs.py -min 10 -max 10 -r 1 -i /home/antolinlab/Desktop/IDs.txt -v /home/antolinlab/Desktop/D_variabilis_Pseudoref/MasterPseudoRefVCF_Copy/pseudoref_mapped_genotypes.vcf -o /home/antolinlab/Desktop/snp_bootstrap_test2.txt -m 0.75
@@ -81,16 +82,17 @@ for n in range(min_ticks, (max_ticks+1)):
         snp_line = split_stderr[17]
         snp_count = [int(s) for s in snp_line.split() if s.isdigit()][0] # split snp_line, search for integers, and save the first one found
 
+	'''
         vcf_call = "vcftools --vcf /home/antolinlab/Desktop/vcf_chrom_rename_final.vcf --plink --out /home/antolinlab/Desktop/vcf_tmp_plink"
         processList = []
-            for i in xrange(0,10):
-                proc = Popen(args(i))
-                processList.append(proc)
-            for proc in processList:
-                stdout, stderr = proc.communicate()
-                with file as open(file,'w'):
-                    file.write(stdout + os.endl)
-
+        for i in xrange(0,10):
+            proc = Popen(args(i))
+            processList.append(proc)
+        for proc in processList:
+            stdout, stderr = proc.communicate()
+            with file as open(file,'w'):
+            	file.write(stdout + os.endl)
+	'''
 
         # Plink expects human data and doesn't like chromosome numbers > 22. We don't know the chromosome structure, so replace all the chromosome names with "1"
         # first get rid of the text in the fragment ID
@@ -116,30 +118,53 @@ for n in range(min_ticks, (max_ticks+1)):
 
         # for option A (matrix), the plink file is often too big to be handled by R.
         # get the upper triangle from the matrix, convert to a vector, and take random subsamples of the data
-        with open('plink.ld') as f:
-            vector = f[np.triu_indices(f.shape[1], k=1])
-            resample = np.zeros((10, 3000))
-            for s in xrange(10):
-                sample = np.random.choice(vector, size=3000)    
+	'''        
+	matrix = np.loadtxt('plink.ld')
+        vector = matrix[np.triu_indices(matrix.shape[1], k=1)]
+        resample = np.zeros((10, 3000))
+        for s in xrange(10):
+        	sample = np.random.choice(vector, size=3000)    
                 resample[s] = sample # add the resampled data to a new row
-        save_name = '/home/antolinlab/Desktop' + outfile + time.strftime('%Y-%m-%d %H-%M") + "_" + str(int(np.random.uniform(100,1000)))
-        np.savetxt(fname=save.name, resample, delimiter=',')
-        
+        save_name = '/home/antolinlab/Desktop' + outfile + "_" + time.strftime('%Y-%m-%d %H-%M') + "_" + str(int(np.random.uniform(100,1000)))
+        np.savetxt(save.name, resample, delimiter=',')
+        '''
+
         # convert to long form without loading the whole matrix into memory... the resulting long form should fit in memory
-        '''
-        i = 0 # start line counter
-        with open('plink.ld') as f:
-            for line in f: # read file line by line
-                b=(line.split())[i:snp_count] # get the upper triangle
-                i += 1 # increase the counter
-                for j in b:
-                    #print j
-                    if j != 'nan':
-                        p = chisqprob((float(j)*22),1)
-                        #print p
-                        with open('long_plink_pval.ld', 'a') as c:
-                            c.write(str(p) + '\n')
-        '''
+
+	# some explanation using a toy symmetric matrix
+	# data...	index w/respect to full upper triangle... 	actual row indexes... 	row indexes when lower triangle and diagonal are removed
+	#[[1, x, x],	[[-, 0, 1],					[[0, 1, 2],		[0,1]
+	# [x, 1, x],	 [-, -, 2],					 [0, 1, 2],		[0]
+	# [x, x, 1]]	 [-, -, -]]					 [0, 1, 2]]
+	
+	# the code chunk below relates the index with respect to the full upper triangle 
+	# (corresponding to data we want) with the indexes assigned each row as it is read into memory
+        
+	for ldResample in range(10):
+		print 'Resampling LD stats'
+		# pre-select values to save
+		idxSave = np.random.choice(range(snp_count), size=3000)
+		idxSave.sort()
+	        i = 1 # start line counter
+		s = 0 # start SNP counter
+		#keepSNPsList = []
+	        with open('plink.ld') as f:
+	        	save_name = '/home/antolinlab/Desktop/' + "_" + str(n) + "_" + 'retained_plink_R2.ld'   
+			print save_name			
+			for line in f: # read file line by line
+				keepSNPs = [] # clear the list                
+				rowData = (line.split())[i:snp_count] # get the upper triangle
+				trueIdx = range(s, s+len(rowData)-1) # get the index w/respect to complete upper triangle (not just the current row loaded)
+				keepTrueIdx = list(set(trueIdx) & set(idxSave)) # find the intersection between what we have loaded and what we'd like to keep
+				i += 1 # increase the line counter
+				s = s + len(rowData) # increase the SNP counter
+				for ti in keepTrueIdx:				
+					keepRowIdx = trueIdx.index(ti)	# the index of trueIdx will correspond to the index of rowData. look up the index of the keepTrueIndexes (not very pythonic, but so goes it)			
+					saveR2 = rowData[keepRowIdx]					
+					with open(save_name, 'a') as c:
+						for p in keepSNPs:
+							c.write(str(ldResample) + str(saveR2) + '\n')
+        c.close()
 
 '''
 r = Popen(["Rscript", "plink_LDmatrix_sig.r", "plink.ld"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
