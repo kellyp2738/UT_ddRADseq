@@ -156,6 +156,7 @@ for n in range(min_ticks, (max_ticks+1)):
 				rowData = (line.split())[i:snp_count] # get the upper triangle
 				trueIdx = range(s, s+len(rowData)-1) # get the index w/respect to complete upper triangle (not just the current row loaded)
 				keepTrueIdx = list(set(trueIdx) & set(idxSave)) # find the intersection between what we have loaded and what we'd like to keep
+				assert(len(trueIdx) > 0)
 				i += 1 # increase the line counter
 				s = s + len(rowData) # increase the SNP counter
 				for ti in keepTrueIdx:				
