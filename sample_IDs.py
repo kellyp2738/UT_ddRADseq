@@ -145,14 +145,14 @@ for n in range(min_ticks, (max_ticks+1)):
 		# pre-select values to save
 		idxSave = np.random.choice(range(snp_count), size=3000)
 		idxSave.sort()
-	        i = 1 # start line counter
+	    i = 1 # start line counter
 		s = 0 # start SNP counter
 		#keepSNPsList = []
-	        with open('plink.ld') as f:
-	        	save_name = '/home/antolinlab/Desktop/' + "_" + str(n) + "_" + 'retained_plink_R2.ld'   
+	    with open('plink.ld') as f:
+	        save_name = '/home/antolinlab/Desktop/' + "_" + str(n) + "_" + 'retained_plink_R2.ld'   
 			print save_name			
 			for line in f: # read file line by line
-				keepSNPs = [] # clear the list                
+				#keepSNPs = [] # clear the list                
 				rowData = (line.split())[i:snp_count] # get the upper triangle
 				trueIdx = range(s, s+len(rowData)-1) # get the index w/respect to complete upper triangle (not just the current row loaded)
 				keepTrueIdx = list(set(trueIdx) & set(idxSave)) # find the intersection between what we have loaded and what we'd like to keep
@@ -163,9 +163,7 @@ for n in range(min_ticks, (max_ticks+1)):
 					keepRowIdx = trueIdx.index(ti)	# the index of trueIdx will correspond to the index of rowData. look up the index of the keepTrueIndexes (not very pythonic, but so goes it)			
 					saveR2 = rowData[keepRowIdx]					
 					with open(save_name, 'a') as c:
-						for p in keepSNPs:
-							c.write(str(ldResample) + str(saveR2) + '\n')
-        c.close()
+						c.write(str(ldResample) + str(saveR2) + '\n')
 
 '''
 r = Popen(["Rscript", "plink_LDmatrix_sig.r", "plink.ld"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
