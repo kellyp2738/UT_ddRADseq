@@ -9,6 +9,16 @@ source("http://bioconductor.org/biocLite.R")
 biocLite("qvalue")
 library(qvalue)
 
+ld.values.normal<-read.table(file='~/Desktop/UT_ddRADseq/plink.ld')
+ld.u<-ld.values.normal[upper.tri(ld.values.normal)]
+ld.u[!is.finite(ld.u)] <- NA
+ld.u<-ld.u[complete.cases(ld.u)]
+ld.hist<-hist(ld.u, plot=F)
+
+library(MASS)
+
+fitdistr(ld.u, densfun='beta', start=list(shape1=0.5, shape2=0.5))
+
 # which correction to use? benjamini-hochberg adjusted p-value (as in p.adjust) or q-value?
 #https://stat.ethz.ch/pipermail/bioconductor/attachments/20121219/00dc27b1/attachment.pl
 # seems like q-values require large studies (>3000) and an expectation that a number of the values will be significant
