@@ -1,31 +1,50 @@
 ## calculate significance of LD R^2 and make FDR correction (matrix input)
 
+## some libraries for big memory operations, unused
 library(doMC)
 library(bigtabulate)
 library(bigmemory)
 library(ff)
 
+## for multiple comparison correction
 source("http://bioconductor.org/biocLite.R")
 biocLite("qvalue")
 library(qvalue)
 
+## for trying to fit distributions
+library(MASS)
+
+## general syntax for getting the upper triangle of the matrix
 ld.values.normal<-read.table(file='~/Desktop/UT_ddRADseq/plink.ld')
 ld.u<-ld.values.normal[upper.tri(ld.values.normal)]
 ld.u[!is.finite(ld.u)] <- NA
 ld.u<-ld.u[complete.cases(ld.u)]
-ld.hist<-hist(ld.u, plot=F)
+ld.hist<-hist(ld.u, breaks=seq(0,1,0.05), plot=F)
+head(ld.u)
+min(ld.u) #0
+max(ld.u) #1
 
-library(MASS)
+## one thought was to describe the distribution of R2 values in terms of a beta distribution
+## and find q-critical values corresponding to that distribution
+ld.sample<-sample(ld.u, 1000) #try fitting with a small sample
+fitdistr(ld.sample, densfun='beta', start=list(shape1=1, shape2=1))
+# doesn't work -- beta with these params is not defined at 0 or 1 (though generally beta distr. are defined there)
+# the actual function:
+beta.distr<-function(x, a, b){
+  y=((x^(a-1))*((1-x)^(b-1)))/beta(a,b)
+  return(y)
+}
+# another approach - non-linear regression with the beta distribution pdf:
+ld.df<-data.frame(cbind(ld.hist$density, ld.hist$mids))
+names(ld.df)<-c('density', 'mids')
+beta.fit<-nls(density ~ ((mids^(a-1))*((1-mids)^(b-1)))/beta(a,b), data=ld.df, start=c(a=0.5, b=0.5))
+# doesn't work for the same reasons as above
 
-fitdistr(ld.u, densfun='beta', start=list(shape1=0.5, shape2=0.5))
+### Q-VALUES: this code works but was never fully implemented
 
 # which correction to use? benjamini-hochberg adjusted p-value (as in p.adjust) or q-value?
 #https://stat.ethz.ch/pipermail/bioconductor/attachments/20121219/00dc27b1/attachment.pl
 # seems like q-values require large studies (>3000) and an expectation that a number of the values will be significant
-
-options <- commandArgs(TRUE)
-
-infile <- options[1]
 
 N <- 22 # number chromosomes in D. variabilis
 
@@ -46,6 +65,8 @@ for(col in 1:length(test.chisq.p[1,])){
   qv.matrix[,col]<-qvalue(complete.data)$qvalues
   fraction.sig<-c(fraction.sig, length(qv.matrix[qv.matrix[,col]<0.028,col])/length(col.data))
 }
+
+#####
 
 # read data
 ld.matrix <- read.table(infile)
@@ -118,6 +139,8 @@ diffs<-data.frame(q.matrix[,1]-ld.chisq.p[,1]
                 
 ld.qvals<-apply(ld.chisq.p, 1:2, function(x) p.adjust(x[complete.cases(x)], method=c('fdr')))
 
+################################################################################################################
+## the stuff below was never fully implemented and is probably largely unhelpful; ignore.
 
 n.sig<-apply(ld.qvals, 2, )
 
