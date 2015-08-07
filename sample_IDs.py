@@ -12,7 +12,7 @@ from operator import itemgetter
 import csv
 
 # line for profiling system usage
-# python -m cProfile sample_IDs.py -min 10 -max 10 -r 1 -i /home/antolinlab/Desktop/IDs.txt -v /home/antolinlab/Desktop/D_variabilis_Pseudoref/MasterPseudoRefVCF_Copy/pseudoref_mapped_genotypes.vcf -o /home/antolinlab/Desktop/snp_bootstrap_test2.txt -m 0.75
+# python -m cProfile sample_IDs.py -min 10 -max 10 -r 1 -i /home/antolinlab/Desktop/IDs.txt -v /home/antolinlab/Desktop/D_variabilis_Pseudoref/MasterPseudoRefVCF_Copy/pseudoref_mapped_genotypes.vcf -os /home/antolinlab/Desktop/snp_bootstrap_test2.txt -or /home/antolinlab/Desktop/UT_ddRADseq/Rsq/high_R2_fraction.csv -m 0.75
 
 if __name__ == '__main__':
     
@@ -24,7 +24,8 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--repetitions', help = 'Number of repetitions for each sample size.')    
     parser.add_argument('-i', '--input_ID_file', help = 'Path to input ID file.')
     parser.add_argument('-v', '--input_VCF_file', help = 'Path to input VCF file.')
-    parser.add_argument('-o', '--output', help = 'Path to output SNP count file.')
+    parser.add_argument('-os', '--output_snp', help = 'Path to output SNP count file.')
+    parser.add_argument('-or', '--output_R2', help = 'Path to output fraction high R2 file.')
     parser.add_argument('-m', '--max_missing', help = 'Max-missing parameter for VCFtools.')
 
     opts = parser.parse_args()
@@ -36,39 +37,50 @@ max_ticks=int(opts.max_sample)
 r=int(opts.repetitions)
 infile_ID = opts.input_ID_file
 infile_VCF = opts.input_VCF_file
-outfile = opts.output
+outfile1 = opts.output_snp
+outfile2 = opts.output_R2
 max_missing = opts.max_missing
 
-# open the file of tick IDs that will be sampled
-id_file=open(infile_ID, 'r')
+
 
 # delete the pre-existing output file?
-if os.path.isfile(outfile):
-    q = 'Overwrite existing data file?'
-    prompt = '[Y/n]'
-    valid = {"yes":True, "y":True, "Y":True, "Yes":True}
-    sys.stdout.write(q + prompt)
-    choice = raw_input().lower()
-    if choice in valid:
-        os.remove(outfile)
-    else:
-        print 'Please choose a different file name.'
-        quit()
-
+if (os.path.isfile(outfile1) or os.path.isfile(outfile2)):
+	print outfile1
+	print outfile2
+	q = 'Overwrite existing data files named above?'
+	prompt = '[Y/n]'
+	valid = {"yes":True, "y":True, "Y":True, "Yes":True}
+	sys.stdout.write(q + prompt)
+	choice = raw_input().lower()
+	if choice in valid:
+		if os.path.isfile(outfile1):
+			os.remove(outfile1)
+		if os.path.isfile(outfile2):
+			os.remove(outfile2)
+	else:
+		print 'Please choose a different file name.'
+		quit()
+	
 for n in range(min_ticks, (max_ticks+1)):
     for j in range(1, (r+1)):
-        # open a file to which sample data can be appended
-        final_data=open(outfile, 'a')
+	print 'repetition number', j        
+	# open a file to which sample data can be appended
+        final_data=open(outfile1, 'a')
+
+	# open the file of tick IDs that will be sampled
+	id_file=open(infile_ID, 'r')
 
         # permute the tick IDs for resampling/refiltering the VCF file
         id_names=id_file.readlines() #this creates a vector that has sample names and newline characters
         id_permute=rand.permutation(id_names) # permute the array randomly to generate new combos of ticks to sample
         id_sample=id_permute[0:n] # get the first n elements of the array
+	print id_sample
 
         # create a temporary file for holding the tick sample IDs
         f=open('/home/antolinlab/Desktop/tmp.txt', 'w') # open a temp file
         for i in range(0, n):
-            #print id_sample[i]
+	    print 'i', i
+            print id_sample[i]
             f.writelines(id_sample[i]) # add the sample name to the file. newlines are already embedded in the name.
         f.close()
 
@@ -114,22 +126,15 @@ for n in range(min_ticks, (max_ticks+1)):
         subprocess.call("plink --file /home/antolinlab/Desktop/vcf_tmp_plink --r2 --matrix --noweb", shell=True) # option A: pairwise matrix
         #subprocess.call("plink --file /home/antolinlab/Desktop/vcf_tmp_plink --r2 --inter-chr --allow-no-sex --ld-window-r2 0 --noweb", shell=True) # option B: long-format list
 
+	'''
+	# Old scripts for resampling LD files and inputting into q-value calculation
+	# the q-value calculation was never fully implemented in R...
+
         # for option B (long form) only: PLINK long-form files have extra spaces to make them human readable... remove those spaces for R import
         #subprocess.call("sed -E 's|  *| |g' plink.ld > plink_edit-2.ld", shell=True)
 
         # for option A (matrix), the plink file is often too big to be handled by R.
         # get the upper triangle from the matrix, convert to a vector, and take random subsamples of the data
-	'''        
-	matrix = np.loadtxt('plink.ld')
-        vector = matrix[np.triu_indices(matrix.shape[1], k=1)]
-        resample = np.zeros((10, 3000))
-        for s in xrange(10):
-        	sample = np.random.choice(vector, size=3000)    
-                resample[s] = sample # add the resampled data to a new row
-        save_name = '/home/antolinlab/Desktop' + outfile + "_" + time.strftime('%Y-%m-%d %H-%M') + "_" + str(int(np.random.uniform(100,1000)))
-        np.savetxt(save.name, resample, delimiter=',')
-        '''
-
         # convert to long form without loading the whole matrix into memory... the resulting long form should fit in memory
 
 	# some explanation using a toy symmetric matrix
@@ -142,6 +147,8 @@ for n in range(min_ticks, (max_ticks+1)):
 	# (corresponding to data we want) with the indexes assigned each row as it is read into memory
         
 	save_name = '/home/antolinlab/Desktop/' + str(n) + "_" + 'retained_plink_R2.csv'   
+	# if we want to overwrite the output file each time because we don't need it...
+	os.remove(save_name)	
 	print 'Resampling LD stats'
 	for ldResample in range(10):
 		idxSave = np.random.choice(range(snp_count), size=30, replace=False)
@@ -162,21 +169,21 @@ for n in range(min_ticks, (max_ticks+1)):
 						with open(save_name, 'a') as c:
 							ldWriter = csv.writer(c, delimiter=',')
 							ldWriter.writerow([str(ldResample)] + [str(saveR2)])
+	'''	
 
-
-'''
-r = Popen(["Rscript", "plink_LDmatrix_sig.r", "plink.ld"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-outs, errs = r.communicate()
-out_split = str.splitlines(outs) #out contains some FDRtools outputs and the numbers we're interested in
-values = out_split[5] # our numbers of interest are in line 5
-values_split = str.split(values) # split line 5 into its components
-snp_pairs = values_split[1] # number of snp pairs (should be equal to number of snps ^2)
-sig_pairs = values_split[2] # number of snp pairs with R2 > 0.8 and a significant q value
+	r = Popen(["Rscript", "save_R2_hist.r", str(n)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+	outs, errs = r.communicate()
+	out_split = str.splitlines(outs) #out contains the print output from r (fraction 'significant', which in this context is simply greater than some R^2 threshold
+	outss = str.split(out_split[0])
+	outss[0] = n # replace the R print output line number, which we don't need anyway, with the sample size	
+	with open(outfile2, 'a') as c: # open in append mode
+		r2Writer = csv.writer(c, delimiter=",")
+		r2Writer.writerow(outss)	
 
 # save the sample size and snp count
-write_line = [str(n), ",", str(snp_count), ",", str(snp_pairs), ",", str(sig_pairs), "\n"]
+write_line = [str(n), ",", str(snp_count), "\n"]
 final_data.writelines(write_line)
 final_data.close()
-'''
+
 
 
