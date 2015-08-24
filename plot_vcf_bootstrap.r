@@ -14,13 +14,23 @@ infile<-args[1]
 # read in the snp data file
 data<-read.table(infile, header=FALSE)
 
-data<-read.csv('~/Desktop/UT_ddRADseq/snp_bootstrap_final.txt', header=FALSE)
+#old EEID file:
+#data<-read.csv('~/Desktop/UT_ddRADseq/snp_bootstrap_final.txt', header=FALSE)
+data<-read.csv('~/Desktop/snp_bootstrap_all_retained_Aug2015.txt', header=FALSE)
 names(data)<-c('n', 'snps')
+
+# LD Data
+ld.data<-read.csv('~/Desktop/UT_ddRADseq/Rsq/high_R2_fraction_full_Aug2015.csv', header=F)
+# fractions of SNPs w/R^2 greater than the named values
+ld.data$nR2snps95<-ld.data$p95*data$snps
+names(ld.data)<-c('n', 'p95', 'p90', 'p85', 'p80', 'nR2snps95')
 
 # create a boxplot that also displays the raw data (jittered on x-axis)
 #png(file='~/Dropbox/ddRADseq/Final_Analysis/vcf_bootstrap_sampleSize.png', height=20, width=30, unit='cm', res=300)
-pdf(file='~/Dropbox/ddRADseq/Final_Analysis/vcf_bootstrap_sampleSize.pdf', height=20/2.56, width=30/2.54)
-par(mfrow=c(1,1), mar=c(5,5,2,1))
+#pdf(file='~/Dropbox/ddRADseq/Final_Analysis/vcf_bootstrap_sampleSize.pdf', height=20/2.56, width=30/2.54)
+
+png(file='~/Dropbox/ddRADseq/Final_Analysis/vcf_bootstrap_sampleSize_LD.png', height=20, width=30, unit='cm', res=300)
+par(mfrow=c(2,1), mar=c(5,6,2,1))
 plot(x=NULL, y=NULL, xlim=c(0,75), ylim=c(4000,20000), axes=FALSE, xlab="", ylab="",
      main='75% Fragment Representation')
 for(i in 1:((max(data$n)-min(data$n))+1)){
@@ -30,14 +40,42 @@ for(i in 1:((max(data$n)-min(data$n))+1)){
 boxplot(snps~n, data=data, axes=FALSE, add=TRUE, col=alpha('white', 0),
         ylim=c(round_any(min(data$snps), 1000, f=floor), 
                round_any(max(data$snps), 1000, f=ceiling)),
-        ylab='SNPs Recovered (1000s)', xlab='Sample Size', cex.lab=1.5)
+        ylab='', xlab='', cex.lab=1.5)
+mtext(side=2, line=4, text='SNPs Recovered (1000s)', cex=1.5)
 
 axis(side=1, cex.axis=1.5, at=seq(1, length(unique(data$n)), 5), labels=seq(10, 75, 5))
 axis(side=2, las=1, at=seq(round_any(min(data$snps), 1000, f=floor), 
                            round_any(max(data$snps), 1000, f=floor)+1000, 1000),
      labels=seq(round_any(min(data$snps), 1000, f=floor), 
                 round_any(max(data$snps), 1000, f=floor)+1000, 1000)/1000, cex.axis=1.5)
+#dev.off()
+
+plot(x=NULL, y=NULL, xlim=c(0,75), ylim=c(0, 0.07), axes=FALSE, xlab="", ylab="",
+     main='')
+for(i in 1:((max(ld.data$n)-min(ld.data$n))+1)){
+  ld.n.data<-subset(ld.data, n==unique(ld.data$n)[i])
+  points(jitter(rep(i, length(ld.n.data$n)), amount=0.1), ld.n.data$p95, pch=16, col=alpha('blue', 0.25))
+}
+boxplot(p95~n, data=ld.data, axes=FALSE, add=TRUE, col=alpha('white', 0),
+        ylab='', xlab='Sample Size', cex.lab=1.5)
+mtext(side=2, line=4, text=expression(paste('Fraction of SNPs with R'^'2',' > 0.95')), cex=1.5)
+axis(side=1, cex.axis=1.5, at=seq(1, length(unique(ld.data$n)), 5), labels=seq(10, 75, 5))
+axis(side=2, las=1, cex.axis=1.5)
 dev.off()
+
+plot(x=NULL, y=NULL, xlim=c(0,75), ylim=c(0, 1000), axes=FALSE, xlab="", ylab="",
+     main='75% Fragment Representation')
+for(i in 1:((max(ld.data$n)-min(ld.data$n))+1)){
+  ld.n.data<-subset(ld.data, n==unique(ld.data$n)[i])
+  points(jitter(rep(i, length(ld.n.data$n)), amount=0.1), ld.n.data$nR2snps95, pch=16, col=alpha('yellow', 0.25))
+}
+boxplot(nR2snps95~n, data=ld.data, axes=FALSE, add=TRUE, col=alpha('white', 0),
+        ylab='', xlab='Sample Size', cex.lab=1.5)
+mtext(side=2, line=4, text=expression(paste('Number of SNPs with R'^'2',' > 0.95')), cex=1.5)
+axis(side=1, cex.axis=1.5, at=seq(1, length(unique(ld.data$n)), 5), labels=seq(10, 75, 5))
+axis(side=2, las=1, cex.axis=1.5)
+
+
 
 # determine average snp recover
 ns<-c()
