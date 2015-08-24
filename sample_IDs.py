@@ -64,8 +64,6 @@ if (os.path.isfile(outfile1) or os.path.isfile(outfile2)):
 for n in range(min_ticks, (max_ticks+1)):
     for j in range(1, (r+1)):
 	print 'repetition number', j        
-	# open a file to which sample data can be appended
-        final_data=open(outfile1, 'a')
 
 	# open the file of tick IDs that will be sampled
 	id_file=open(infile_ID, 'r')
@@ -94,6 +92,14 @@ for n in range(min_ticks, (max_ticks+1)):
         split_stderr = str.splitlines(stderr)
         snp_line = split_stderr[17]
         snp_count = [int(s) for s in snp_line.split() if s.isdigit()][0] # split snp_line, search for integers, and save the first one found
+
+	# open a file to which sample data can be appended
+        final_data=open(outfile1, 'a')
+
+	# save the sample size and snp count
+	write_line = [str(n), ",", str(snp_count), "\n"]
+	final_data.writelines(write_line)
+	final_data.close()
 
 	'''
         vcf_call = "vcftools --vcf /home/antolinlab/Desktop/vcf_chrom_rename_final.vcf --plink --out /home/antolinlab/Desktop/vcf_tmp_plink"
@@ -171,19 +177,17 @@ for n in range(min_ticks, (max_ticks+1)):
 							ldWriter.writerow([str(ldResample)] + [str(saveR2)])
 	'''	
 
-	r = Popen(["Rscript", "save_R2_hist.r", str(n)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-	outs, errs = r.communicate()
+	rr = Popen(["Rscript", "save_R2_hist.r", str(n)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+	outs, errs = rr.communicate()
 	out_split = str.splitlines(outs) #out contains the print output from r (fraction 'significant', which in this context is simply greater than some R^2 threshold
+	print out_split	
 	outss = str.split(out_split[0])
 	outss[0] = n # replace the R print output line number, which we don't need anyway, with the sample size	
 	with open(outfile2, 'a') as c: # open in append mode
 		r2Writer = csv.writer(c, delimiter=",")
 		r2Writer.writerow(outss)	
 
-# save the sample size and snp count
-write_line = [str(n), ",", str(snp_count), "\n"]
-final_data.writelines(write_line)
-final_data.close()
+
 
 
 
