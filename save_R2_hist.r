@@ -24,7 +24,7 @@ print(fs) # capture fraction sig in stdout/stderr to make one big file in python
 f.name<-file.path('~/Desktop/UT_ddRADseq/Rsq', paste(n, 'hist.csv', sep=''))
 #g.name<-file.path('~/Desktop/UT_ddRADseq/Rsq', paste(n, 'fraction_sig.csv', sep=''))
 
-write.csv(output, f.name, row.names=F)
+write.csv(output, f.name, row.names=F, append=T)
 
 # for when the time comes, the plotting script...
 #plot(ld.hist$mids, ld.hist$density, type='l', axes=F, xlab=expression('R'^'2'), ylab='', cex.axis=1.5, cex.lab=1.5)
