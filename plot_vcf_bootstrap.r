@@ -29,7 +29,8 @@ names(ld.data)<-c('n', 'p95', 'p90', 'p85', 'p80', 'nR2snps95')
 #png(file='~/Dropbox/ddRADseq/Final_Analysis/vcf_bootstrap_sampleSize.png', height=20, width=30, unit='cm', res=300)
 #pdf(file='~/Dropbox/ddRADseq/Final_Analysis/vcf_bootstrap_sampleSize.pdf', height=20/2.56, width=30/2.54)
 
-png(file='~/Dropbox/ddRADseq/Final_Analysis/vcf_bootstrap_sampleSize_LD.png', height=20, width=30, unit='cm', res=300)
+png(file='~/Dropbox/ddRADseq/Final_Analysis/vcf_bootstrap_sampleSize_LD.png', height=40, width=30, unit='cm', res=300)
+pdf(file='~/Dropbox/ddRADseq/Final_Analysis/vcf_bootstrap_sampleSize_LD.pdf', height=40/2.56, width=30/2.56)
 par(mfrow=c(2,1), mar=c(5,6,2,1))
 plot(x=NULL, y=NULL, xlim=c(0,75), ylim=c(4000,20000), axes=FALSE, xlab="", ylab="",
      main='75% Fragment Representation')
@@ -75,7 +76,40 @@ mtext(side=2, line=4, text=expression(paste('Number of SNPs with R'^'2',' > 0.95
 axis(side=1, cex.axis=1.5, at=seq(1, length(unique(ld.data$n)), 5), labels=seq(10, 75, 5))
 axis(side=2, las=1, cex.axis=1.5)
 
+# sample R2 histograms
 
+r2.hist<-function(data, xlab='', ylab='', raw=TRUE, bar=FALSE){
+  if(raw){
+    plot(data$mids, data$density, type='l', axes=F, xlab=xlab, ylab=ylab, cex.axis=1.5, cex.lab=1.5)
+    axis(side=1, labels=seq(0,1,0.25), at=seq(0,1,0.25), cex.axis=1.5, cex.lab=1.5)
+    polygon(x=c(min(data$mids), data$mids, max(data$mids)), y=c(0, data$density, 0), col='blue')
+  }
+  if(bar){
+    barplot(data$density, space=0, col='blue', xlab=xlab, ylab='', axes=F, cex.lab=1.5)
+    axis(side=1, labels=seq(0,1,0.25), at=seq(0,length(data$density),length(data$density)/4), cex.axis=1.5, cex.lab=1.5)
+    mtext(side=2, line=1, text=ylab)
+  }
+  else{
+    lo <- loess(data$density~data$mids, span=0.6)
+    plot(data$density~data$mids, type='l', axes=F, xlab=xlab, ylab=ylab, cex.axis=1.5, cex.lab=1.5, col='white')
+    lines(data$mids, predict(lo), col='blue', lwd=2)
+    axis(side=1, labels=seq(0,1,0.25), at=seq(0,1,0.25), cex.axis=1.5, cex.lab=1.5)
+    polygon(x=c(min(data$mids), data$mids, max(data$mids)), y=c(0, predict(lo), 0), col='blue')
+  }
+}
+
+r2.10<-read.csv('~/Desktop/UT_ddRADseq/Rsq/10hist.csv')
+r2.20<-read.csv('~/Desktop/UT_ddRADseq/Rsq/20hist.csv')
+r2.30<-read.csv('~/Desktop/UT_ddRADseq/Rsq/30hist.csv')
+r2.75<-read.csv('~/Desktop/UT_ddRADseq/Rsq/75hist.csv')
+
+pdf(file='~/Dropbox/ddRADseq/Final_Analysis/select_R2_distributions.pdf', height=20/2.56, width=20/2.56)
+par(mfrow=c(2,2), mar=c(4,3,2,2))
+r2.hist(r2.10, ylab='n=10', xlab=expression('R'^'2'), raw=F, bar=T)
+r2.hist(r2.20, ylab='n=20', xlab=expression('R'^'2'), raw=F, bar=T)
+r2.hist(r2.30, ylab='n=30', xlab=expression('R'^'2'), raw=F, bar=T)
+r2.hist(r2.75, ylab='n=75', xlab=expression('R'^'2'), raw=F, bar=T)
+dev.off()
 
 # determine average snp recover
 ns<-c()
