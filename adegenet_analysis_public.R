@@ -21,7 +21,7 @@ library("scales")
 
 # load the custom scatter function, adapted from scatter.dapc in adegenet
 setwd() #set working directory to directory containing the analysis scripts
-source("dapc_custom_scatter.r")
+source("~/Desktop/UT_ddRADseq/dapc_custom_scatter.r")
 source('~/Dropbox/2014&Older/ModelFitting/R Scripts/PlotPrevCI.r')
 
 ## LOAD SUMMARY DATA FILE
@@ -164,7 +164,7 @@ find.clusters(site.host)
 setwd('~/Dropbox/ddRADseq/Final_Analysis/Structure_by_Site/')
 site<-read.snp('Final_Pseudoref_minmeanDP20_minGQ25_maf0.05_BOTH_SITES_host_filtered_only_maxmissing0.75_MERGED_FOR_ADEGENET.finalSNPs_site.snp')
 # discriminant analysis of principal components to detect clusters
-site.dapc<-dapc(site, pop=site.name, n.pca=33, n.da=1) # save as many PCs as possible
+site.dapc<-dapc(site, pop=site@pop, n.pca=33, n.da=1) # save as many PCs as possible
 pdf(file='dapc_by_site_recolored.pdf', width=10/2.54, height=10/2.54)
 par(mar=c(5,5,2,2))
 site.colors2<-c('#fec44f', '#fee391')
@@ -269,6 +269,24 @@ axis(side=2, las=1)
 legend("topleft", legend=c('Raccoon', 'Opossum'), fill=c('red', 'blue'), bty='n')
 #dev.off()
 
+## Okay, at this point we've done both "by site" and "HB only"... so, time to plot them both together
+par(mfrow=c(1,2), mar=c(5,4,3,2))
+scatter.custom(site.dapc, angle=c(45, 135), col=c('blue', 'goldenrod'))
+mtext(side=3, text=paste(site@n.loc, 'Loci from Both Sites'))
+scatter.custom(dapc2, angle=c(45, 45), col=c('darkblue', 'lightblue'))
+mtext(side=3, text=paste(tick.snps2@n.loc, 'Loci from HB Only'))
+
+pdf(file='~/Desktop/UT_ddRADseq/dapc_site_and_hb.pdf', height=20/2.54, width=40/2.54)
+par(mfrow=c(1,2), mar=c(5,4,3,2))
+scatter.custom(site.dapc, col=c('black', 'gray'), cex.axis=1.5, cex.lab=1.5)
+mtext(side=3, line=1.2, text=paste('Both Sites (', site@n.loc, ' Loci)', sep=''), cex=1.5)
+legend("topright", legend=c('Site 1', 'Site 2'), cex=1.5,
+       fill=c(alpha('black', 0.75), alpha('gray', 0.75)), bty='n')
+scatter.custom(dapc2, col=c('black', 'gray'), cex.axis=1.5, cex.lab=1.5)
+mtext(side=3, line=1.2, text=paste('Site 1 (', tick.snps2@n.loc, ' Loci)', sep=''), cex=1.5)
+legend("topright", legend=c('Raccoon', 'Opossum'), cex=1.5,
+       fill=c(alpha('black', 0.75), alpha('gray', 0.75)), bty='n')
+dev.off()
 
 tally2<-0
 assign.hb<-c()
