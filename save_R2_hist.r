@@ -24,7 +24,7 @@ g.80<-length(ld.u[ld.u>0.8])/length(ld.u)
 fs<-c(g.95, g.90, g.85, g.80)
 print(fs) # capture fraction sig in stdout/stderr to make one big file in python
 
-f.name<-file.path('~/Desktop/UT_ddRADseq/Rsq', paste(n, fname, 'Hist.csv', sep=''))
+f.name<-file.path('~/Rsq', paste(n, fname, 'Hist.csv', sep=''))
 #g.name<-file.path('~/Desktop/UT_ddRADseq/Rsq', paste(n, 'fraction_sig.csv', sep=''))
 
 write.csv(output, f.name, row.names=F, append=T)
