@@ -31,6 +31,7 @@ if __name__ == '__main__':
 
     opts = parser.parse_args()
 
+# python /home/02540/kellypie/UT_ddRADseq/sample_IDs.py -min 10 -max 75 -r 100 -i /home/02540/kellypie/UT_ddRADseq/IDs.txt -v /home/02540/kellypie/UT_ddRADseq/pseudoref_mapped_genotypes.vcf -os /scratch/02540/kellypie/UT_ddRADseq/snp_bootstrap_test_Jan2016.txt -or /home/02540/kellypie/UT_ddRADseq/Rsq/high_R2_fraction.csv -m 0.75
 
 
 min_ticks=int(opts.min_sample)
@@ -161,7 +162,7 @@ for n in range(min_ticks, (max_ticks+1)):
         fullPlink = "plink --file " + parent + "vcf_tmp_plink --r2 --matrix --noweb"
         subprocess.call(fullPlink, shell=True) # option A: pairwise matrix
         
-		rr = Popen(["Rscript", "save_R2_hist.r", str(n), 1], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+		rr = Popen(["Rscript", "save_R2_hist.r", parent, str(n), 1], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 		outs, errs = rr.communicate()
 		out_split = str.splitlines(outs) #out contains the print output from r (fraction 'significant', which in this context is simply greater than some R^2 threshold
 		print out_split	
