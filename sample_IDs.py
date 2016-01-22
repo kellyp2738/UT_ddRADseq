@@ -171,7 +171,7 @@ for n in range(min_ticks, (max_ticks+1)):
 			r2Writer = csv.writer(c, delimiter=",")
 			r2Writer.writerow(outss)
 			
-		os.remove("/ / /plink.ld") # delete the intermediate LD file
+		os.remove((parent + "/plink.ld")) # delete the intermediate LD file
 					
 		# -- filtered file
         filteredPlink = "plink --file " + parent + "vcf_uniqueOnly_tmp_plink --r2 --matrix --noweb"
