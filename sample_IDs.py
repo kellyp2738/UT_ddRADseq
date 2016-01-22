@@ -82,7 +82,7 @@ for n in range(min_ticks, (max_ticks+1)):
     tempFile = parent + "/temp.txt"
     f=open(tempFile, 'w') # open a temp file
     for i in range(0, n):
-	    print 'i', i
+        print 'i', i
         print id_sample[i]
         f.writelines(id_sample[i]) # add the sample name to the file. newlines are already embedded in the name.
         f.close()
