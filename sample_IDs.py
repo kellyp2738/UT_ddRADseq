@@ -75,7 +75,7 @@ for n in range(min_ticks, (max_ticks+1)):
     id_names=id_file.readlines() #this creates a vector that has sample names and newline characters
     id_permute=rand.permutation(id_names) # permute the array randomly to generate new combos of ticks to sample
     id_sample=id_permute[0:n] # get the first n elements of the array
-	print id_sample
+    print id_sample
 
     # create a temporary file for holding the tick sample IDs
     tempFile = parent + "/temp.txt"
