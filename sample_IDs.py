@@ -154,7 +154,7 @@ for n in range(min_ticks, (max_ticks+1)):
             fullVCF2Plink = "vcftools --vcf " + parent + "/vcf_chrom_rename_final.vcf --plink --out " + parent + "/vcf_tmp_plink"
             subprocess.call(fullVCF2Plink, shell=True)
             # -- filtered file
-            filteredVCF2Plink = "vcftools --vcf " + parent "/vcf_temp_uniqueOnly_rename_final.vcf --plink --out " + parent + "/vcf_uniqueOnly_tmp_plink" 
+            filteredVCF2Plink = "vcftools --vcf " + parent + "/vcf_temp_uniqueOnly_rename_final.vcf --plink --out " + parent + "/vcf_uniqueOnly_tmp_plink" 
             subprocess.call(filteredVCF2Plink, shell=True)
     
             # calculate LD on the plink file
