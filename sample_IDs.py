@@ -134,7 +134,7 @@ for n in range(min_ticks, (max_ticks+1)):
             reParseCall = "sed '/^##/ d' " + tempVCF + " | awk '$2=NR' OFS='\t' | sed 's/1/POS/' | sed 's|_pseudoreference_pe_concatenated_without_rev_complement||g' | awk '$1=1' OFS='\t' | sed '0,/1/{s/1/#CHROM/}' > " + tempOutDir + "/reParsed.vcf"
             subprocess.call(reParseCall, shell = True)
             reParseCallUnique = "sed '/^##/ d' " + tempUnique + " | awk '$2=NR' OFS='\t' | sed 's/1/POS/' | sed 's|_pseudoreference_pe_concatenated_without_rev_complement||g' | awk '$1=1' OFS='\t' | sed '0,/1/{s/1/#CHROM/}' > " + tempOutDir + "/reParsedUnique.vcf"
-            subprocess.call(reParseCallUniue, shell = True)
+            subprocess.call(reParseCallUnique, shell = True)
             
             # get SNP IDs from vcf file
             # convert the VCF file to a PLINK file
