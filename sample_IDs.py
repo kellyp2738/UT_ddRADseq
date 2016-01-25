@@ -131,9 +131,9 @@ for n in range(min_ticks, (max_ticks+1)):
         final_data.close()
 
         # Plink expects human data and doesn't like chromosome numbers > 22. We don't know the chromosome structure, so replace all the chromosome names with "1"
-        reParseCall = "sed '/^##/ d' " + tempVCF + " | awk '$2=NR' OFS='\t' | sed 's/1/POS/' | sed 's|_pseudoreference_pe_concatenated_without_rev_complement||g' | awk '$1=1' OFS='\t' | sed '0,/1/{s/1/#CHROM/}' > " + tempOutDir + "/reParsed.vcf"
+        reParseCall = "sed '/^##/ d' " + tempVCF + " | awk '$2=NR' OFS='\t' | sed '0,/1/{s/1/POS/}' | sed 's|_pseudoreference_pe_concatenated_without_rev_complement||g' | awk '$1=1' OFS='\t' | sed '0,/1/{s/1/#CHROM/}' > " + tempOutDir + "/reParsed.vcf"
         subprocess.call(reParseCall, shell = True)
-        reParseCallUnique = "sed '/^##/ d' " + tempUnique + " | awk '$2=NR' OFS='\t' | sed 's/1/POS/' | sed 's|_pseudoreference_pe_concatenated_without_rev_complement||g' | awk '$1=1' OFS='\t' | sed '0,/1/{s/1/#CHROM/}' > " + tempOutDir + "/reParsedUnique.vcf"
+        reParseCallUnique = "sed '/^##/ d' " + tempUnique + " | awk '$2=NR' OFS='\t' | sed '0,/1/{s/1/POS/}' | sed 's|_pseudoreference_pe_concatenated_without_rev_complement||g' | awk '$1=1' OFS='\t' | sed '0,/1/{s/1/#CHROM/}' > " + tempOutDir + "/reParsedUnique.vcf"
         subprocess.call(reParseCallUnique, shell = True)
         
         # get SNP IDs from vcf file
