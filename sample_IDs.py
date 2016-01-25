@@ -139,7 +139,7 @@ for n in range(min_ticks, (max_ticks+1)):
         rr2 = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", outfile2, outfile3, str(n), '_filtered'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
         #remove the temp files for that repetition
-        files = glob.glob(tempOutDir)
+        files = glob.glob((tempOutDir+'/*'))
         for f in files:
             os.remove(f)        
       
