@@ -130,13 +130,15 @@ for n in range(min_ticks, (max_ticks+1)):
         fullPlink = "plink --file " + tempOutDir + "/vcf_tmp_plink --r2 --matrix --noweb --out " + tempOutDir + '/plink'
         subprocess.call(fullPlink, shell=True) # option A: pairwise matrix
     
-        rr = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", outfile2, outfile3, str(n), '_unfiltered'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True) 
+    	plinkResults = tempOutDir + '/plink.ld'
+    	
+        rr = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", plinkResults, outfile2, outfile3, str(n), '_unfiltered'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True) 
         os.remove((tempOutDir + "/plink.ld")) # delete the intermediate LD file
                     
         # -- filtered file
         filteredPlink = "plink --file " + tempOutDir + "/vcf_uniqueOnly_tmp_plink --r2 --matrix --noweb --out " + tempOutDir + '/plink'
         subprocess.call(filteredPlink, shell=True) # option A: pairwise matrix
-        rr2 = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", outfile2, outfile3, str(n), '_filtered'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        rr2 = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", plinkResults, outfile2, outfile3, str(n), '_filtered'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
         #remove the temp files for that repetition
         files = glob.glob((tempOutDir+'/*'))
