@@ -97,7 +97,7 @@ for n in range(min_ticks, (max_ticks+1)):
             print 'i', i
             print id_sample[i]
             f.writelines(id_sample[i]) # add the sample name to the file. newlines are already embedded in the name.
-            f.close()
+        f.close()
     
         # call VCFtools with tmp.txt used as the "--keep" file
         my_env=os.environ.copy()
