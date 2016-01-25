@@ -51,7 +51,7 @@ outfile3 = opts.output_R2
 max_missing = opts.max_missing
 
 # what is the parent directory where the outputs should go? (if their paths aren't specified as cmd args)
-# parent=os.path.split(os.path.abspath(outfile1))[0]
+parent=os.path.split(os.path.abspath(outfile1))[0]
 
 # delete the pre-existing output file?
 #if (os.path.isfile(outfile1) or os.path.isfile(outfile2) or os.path.isfile(outfile3)):
