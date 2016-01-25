@@ -1,9 +1,5 @@
 #!python -OO
 
-## somehow when the vcf file gets changed around the column names get removed
-## this is a problem for Plink; find a way to undo it!
-## also make separate n + j directory for outputs b/c otherwise they'll overwrite each other
-
 import numpy.random as rand
 import numpy as np
 from subprocess import call, Popen, PIPE
@@ -31,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument('-op', '--output_parent', help = 'Full path to output directory.')
     parser.add_argument('-os', '--output_snp', help = 'Full path to output SNP count file.')
     parser.add_argument('-or', '--output_R2', help = 'Full path to output fraction high R2 file.')
-    parser.add_argument('-of', '--output_R2_filtered', help = 'Full path to output fraction high R2 file, filtered data.')
+    parser.add_argument('-of', '--output_hist', help = 'Full path to output R2 histogram data.')
     parser.add_argument('-m', '--max_missing', help = 'Max-missing parameter for VCFtools.')
 
     opts = parser.parse_args()
@@ -47,29 +43,11 @@ infile_VCF = opts.input_VCF_file
 parent = opts.output_parent
 outfile1 = opts.output_snp
 outfile2 = opts.output_R2
-outfile3 = opts.output_R2
+outfile3 = opts.output_hist
 max_missing = opts.max_missing
 
 # what is the parent directory where the outputs should go? (if their paths aren't specified as cmd args)
 parent=os.path.split(os.path.abspath(outfile1))[0]
-
-# delete the pre-existing output file?
-#if (os.path.isfile(outfile1) or os.path.isfile(outfile2) or os.path.isfile(outfile3)):
-#    print outfile1
-#    print outfile2
-#    q = 'Overwrite existing data files named above?'
-#    prompt = '[Y/n]'
-#    valid = {"yes":True, "y":True, "Y":True, "Yes":True}
-#    sys.stdout.write(q + prompt)
-#    choice = raw_input().lower()
-#    if choice in valid:
-#        if os.path.isfile(outfile1):
-#            os.remove(outfile1)
-#        if os.path.isfile(outfile2):
-#            os.remove(outfile2)
-#    else:
-#        print 'Please choose a different file name.'
-#        quit()
     
 for n in range(min_ticks, (max_ticks+1)):
 
@@ -146,36 +124,19 @@ for n in range(min_ticks, (max_ticks+1)):
         subprocess.call(filteredVCF2Plink, shell=True)
 
         # calculate LD on the plink file
+        # R will handle the resulting matrix and directly write the relevant summary stats
         # -- full file
         fullPlink = "plink --file " + tempOutDir + "/vcf_tmp_plink --r2 --matrix --noweb"
         subprocess.call(fullPlink, shell=True) # option A: pairwise matrix
-        
-        rr = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", tempOutDir, str(n), '_unfiltered'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        outs, errs = rr.communicate()
-        out_split = str.splitlines(outs) #out contains the print output from r (fraction 'significant', which in this context is simply greater than some R^2 threshold
-        print out_split 
-        outss = str.split(out_split[0])
-        outss[0] = n # replace the R print output line number, which we don't need anyway, with the sample size 
-        with open(outfile2, 'a') as c: # open in append mode
-            r2Writer = csv.writer(c, delimiter=",")
-            r2Writer.writerow(outss)
-            
+    
+        rr = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", outfile2, outfile3, str(n), '_unfiltered'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True) 
         os.remove((tempOutDir + "/plink.ld")) # delete the intermediate LD file
                     
         # -- filtered file
         filteredPlink = "plink --file " + tempOutDir + "/vcf_uniqueOnly_tmp_plink --r2 --matrix --noweb"
         subprocess.call(filteredPlink, shell=True) # option A: pairwise matrix
-        
-        rr2 = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", str(n), '_filtered'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        outs2, errs2 = rr2.communicate()
-        out_split2 = str.splitlines(outs2) #out contains the print output from r (fraction 'significant', which in this context is simply greater than some R^2 threshold
-        print out_split2
-        outss2 = str.split(out_split2[0])
-        outss2[0] = n # replace the R print output line number, which we don't need anyway, with the sample size    
-        with open(outfile3, 'a') as d: # open in append mode
-            r2Writer = csv.writer(d, delimiter=",")
-            r2Writer.writerow(outss2)
-        
+        rr2 = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", outfile2, outfile3, str(n), '_filtered'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+
         #remove the temp files for that repetition
         files = glob.glob(tempOutDir)
         for f in files:
@@ -185,6 +146,28 @@ for n in range(min_ticks, (max_ticks+1)):
 # this bash one-liner will strip the header off a vcf file, look at column 1, generate a frequency table of read IDs, and count the number of lines
 # the number of lines = the number of unique reads. the 'sort' part is NOT optional 
 sed '/^#/ d' qualFilteredOnly.vcf.recode.vcf | awk -F '\t' '{print $1}' | sort | uniq -c | wc -l
+'''
+
+''' OLD FILE HANDLING STUFF
+
+# delete the pre-existing output file?
+#if (os.path.isfile(outfile1) or os.path.isfile(outfile2) or os.path.isfile(outfile3)):
+#    print outfile1
+#    print outfile2
+#    q = 'Overwrite existing data files named above?'
+#    prompt = '[Y/n]'
+#    valid = {"yes":True, "y":True, "Y":True, "Yes":True}
+#    sys.stdout.write(q + prompt)
+#    choice = raw_input().lower()
+#    if choice in valid:
+#        if os.path.isfile(outfile1):
+#            os.remove(outfile1)
+#        if os.path.isfile(outfile2):
+#            os.remove(outfile2)
+#    else:
+#        print 'Please choose a different file name.'
+#        quit()
+
 '''
 
 ''' OLD PARSING STUFF
@@ -218,4 +201,23 @@ sed '/^#/ d' qualFilteredOnly.vcf.recode.vcf | awk -F '\t' '{print $1}' | sort |
             
 '''
 
+''' OLD R STDOUT STUFF
+        outs, errs = rr.communicate()
+        out_split = str.splitlines(outs) #out contains the print output from r (fraction 'significant', which in this context is simply greater than some R^2 threshold
+        print out_split 
+        outss = str.split(out_split[0])
+        outss[0] = n # replace the R print output line number, which we don't need anyway, with the sample size 
+        with open(outfile2, 'a') as c: # open in append mode
+            r2Writer = csv.writer(c, delimiter=",")
+            r2Writer.writerow(outss)
+        
+                outs2, errs2 = rr2.communicate()
+        out_split2 = str.splitlines(outs2) #out contains the print output from r (fraction 'significant', which in this context is simply greater than some R^2 threshold
+        print out_split2
+        outss2 = str.split(out_split2[0])
+        outss2[0] = n # replace the R print output line number, which we don't need anyway, with the sample size    
+        with open(outfile3, 'a') as d: # open in append mode
+            r2Writer = csv.writer(d, delimiter=",")
+            r2Writer.writerow(outss2)
+            
 
