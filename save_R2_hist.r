@@ -2,12 +2,12 @@
 
 args<-commandArgs(trailingOnly=TRUE)
 
-infile<-'plink.ld' # it will always be called this!
+infile = args[1] #<-'plink.ld' # it will always be called this!
 
-outfile2 = args[1] #= opts.output_R2
-outfile3 = args[2] #=opts.output_hist
-n = args[3] # sample size
-fname = args[4] # filtered or unfiltered
+outfile2 = args[2] #= opts.output_R2
+outfile3 = args[3] #=opts.output_hist
+n = args[4] # sample size
+fname = args[5] # filtered or unfiltered
 
 #read in plink data
 ld.values.normal<-read.table(infile)
