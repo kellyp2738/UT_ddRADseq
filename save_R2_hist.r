@@ -35,12 +35,13 @@ g.90<-length(ld.u[ld.u>0.9])/length(ld.u)
 g.85<-length(ld.u[ld.u>0.85])/length(ld.u)
 g.80<-length(ld.u[ld.u>0.8])/length(ld.u)
 fs<-c(n, g.95, g.90, g.85, g.80)
+fsr<-rbind(fs)
 #print(fs) # capture fraction sig in stdout/stderr to make one big file in python
 
 #file name for r2 thresholds
 cutoffs.name<-file.path(paste(outfile2, fname, sep=''))
 
-write.csv(fs, cutoffs.name, sep=',', row.names=F, append=T)
+write.csv(fsr, cutoffs.name, sep=',', row.names=F, append=T)
 
 
 
