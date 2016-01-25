@@ -27,7 +27,7 @@ names(output)<-c('n', 'mids', 'density')
 hist.name<-file.path(paste(outfile3, '_', fname, sep=''))
 
 # write by row
-write.csv(output, file=hist.name, sep=',', row.names=F, append=T)
+write.table(output, file=hist.name, sep=',', row.names=F, append=T)
 
 # separately record the fraction above certain thresholds
 g.95<-length(ld.u[ld.u>0.95])/length(ld.u)
@@ -41,7 +41,7 @@ fsr<-rbind(fs)
 #file name for r2 thresholds
 cutoffs.name<-file.path(paste(outfile2, fname, sep=''))
 
-write.csv(fsr, cutoffs.name, sep=',', row.names=F, append=T)
+write.table(fsr, cutoffs.name, sep=',', row.names=F, append=T)
 
 
 
