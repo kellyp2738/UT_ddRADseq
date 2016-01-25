@@ -27,9 +27,7 @@ names(output)<-c('n', 'mids', 'density')
 hist.name<-file.path(paste(outfile3, '_', fname, sep=''))
 
 # write by row
-for(row in 1:length(output[,1])){
-  write(output[row,], file=hist.name, ncolumns=length(output[1,]), sep=',', append=T)
-}
+write.csv(output, file=hist.name, sep=',', row.names=F, append=T)
 
 # separately record the fraction above certain thresholds
 g.95<-length(ld.u[ld.u>0.95])/length(ld.u)
