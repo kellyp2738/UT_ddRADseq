@@ -73,11 +73,12 @@ max_missing = opts.max_missing
     
 for n in range(min_ticks, (max_ticks+1)):
 
-	os.makedirs((parent + '/temp_' + n)) #make a directory for this sample size
-	tempOutDir = parent + '/temp_' + n
+    os.makedirs((parent + '/temp_' + n)) #make a directory for this sample size
+    tempOutDir = parent + '/temp_' + n
+    
     for j in range(1, (r+1)):
     
-    	print 'repetition number', j        
+        print 'repetition number', j        
     
         # open the file of tick IDs that will be sampled
         id_file=open(infile_ID, 'r')
@@ -174,8 +175,8 @@ for n in range(min_ticks, (max_ticks+1)):
         
         #remove the temp files for that repetition
         files = glob.glob(tempOutDir)
-		for f in files:
-    		os.remove(f)        
+        for f in files:
+            os.remove(f)        
       
 '''
 # this bash one-liner will strip the header off a vcf file, look at column 1, generate a frequency table of read IDs, and count the number of lines
