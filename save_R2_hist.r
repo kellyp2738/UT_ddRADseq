@@ -3,11 +3,9 @@
 args<-commandArgs(trailingOnly=TRUE)
 
 infile<-'plink.ld' # it will always be called this!
-fnames<-c('_unfiltered', '_filtered')
 parentDir<-args[1]
 n<-args[2]
-fname.idx<-args[3] # which type of file (unfiltered/filtered) is being analyzed?
-fname<-fnames[fname.idx]
+fname<-args[3] # which type of file (unfiltered/filtered) is being analyzed?
 #print(n)
 
 ld.values.normal<-read.table(infile)
