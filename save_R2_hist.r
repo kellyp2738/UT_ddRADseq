@@ -3,30 +3,48 @@
 args<-commandArgs(trailingOnly=TRUE)
 
 infile<-'plink.ld' # it will always be called this!
-parentDir<-args[1]
-n<-args[2]
-fname<-args[3] # which type of file (unfiltered/filtered) is being analyzed?
-#print(n)
 
+outfile2 = args[1] #= opts.output_R2
+outfile3 = args[2] #=opts.output_hist
+n = args[3] # sample size
+fname = args[4] # filtered or unfiltered
+
+#read in plink data
 ld.values.normal<-read.table(infile)
+#extract the upper triangle of the matrix, replace infinite values with NA, and retain only complete cases
 ld.u<-ld.values.normal[upper.tri(ld.values.normal)]
 ld.u[!is.finite(ld.u)] <- NA
 ld.u<-ld.u[complete.cases(ld.u)]
+
+
+#get distribution of non-inf R2 values
 ld.hist<-hist(ld.u, breaks=seq(0,1,0.05), plot=F)
+#prepare for saving
 output<-data.frame(cbind(rep(n, length(ld.hist$mids)), ld.hist$mids, ld.hist$density))
 names(output)<-c('n', 'mids', 'density')
 
+#file name for representative histograms
+hist.name<-file.path(paset(outfile3, '_', n, fname, sep=''))
+
+# write by row
+for(row in 1:length(output[,1])){
+  write(row, file=hist.name, ncolumns=length(output[1,]), sep=',', append=T)
+}
+
+# separately record the fraction above certain thresholds
 g.95<-length(ld.u[ld.u>0.95])/length(ld.u)
 g.90<-length(ld.u[ld.u>0.9])/length(ld.u)
 g.85<-length(ld.u[ld.u>0.85])/length(ld.u)
 g.80<-length(ld.u[ld.u>0.8])/length(ld.u)
-fs<-c(g.95, g.90, g.85, g.80)
-print(fs) # capture fraction sig in stdout/stderr to make one big file in python
+fs<-c(n, g.95, g.90, g.85, g.80)
+#print(fs) # capture fraction sig in stdout/stderr to make one big file in python
 
-f.name<-file.path(parentDir paste(n, fname, 'Hist.csv', sep=''))
-#g.name<-file.path('~/Desktop/UT_ddRADseq/Rsq', paste(n, 'fraction_sig.csv', sep=''))
+#file name for r2 thresholds
+cutoffs.name<-file.path(paste(outfile2, "_", n, fname, sep=''))
 
-write.csv(output, f.name, row.names=F, append=T)
+write.csv(fs, cutoffs.name, row.names=F, append=T)
+
+
 
 # for when the time comes, the plotting script...
 #plot(ld.hist$mids, ld.hist$density, type='l', axes=F, xlab=expression('R'^'2'), ylab='', cex.axis=1.5, cex.lab=1.5)
