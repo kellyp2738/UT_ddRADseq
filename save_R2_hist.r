@@ -24,7 +24,7 @@ output<-data.frame(cbind(rep(n, length(ld.hist$mids)), ld.hist$mids, ld.hist$den
 names(output)<-c('n', 'mids', 'density')
 
 #file name for representative histograms
-hist.name<-file.path(paset(outfile3, '_', n, fname, sep=''))
+hist.name<-file.path(paste(outfile3, '_', n, fname, sep=''))
 
 # write by row
 for(row in 1:length(output[,1])){
