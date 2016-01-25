@@ -10,6 +10,7 @@ import io
 from scipy.stats import chisqprob
 from operator import itemgetter
 import csv
+import glob as glob
 
 # line for profiling system usage
 # python -m cProfile sample_IDs.py -min 10 -max 10 -r 1 -i /home/antolinlab/Desktop/IDs.txt -v /home/antolinlab/Desktop/D_variabilis_Pseudoref/MasterPseudoRefVCF_Copy/pseudoref_mapped_genotypes.vcf -os /home/antolinlab/Desktop/snp_bootstrap_test2.txt -or /home/antolinlab/Desktop/UT_ddRADseq/Rsq/high_R2_fraction.csv -m 0.75
