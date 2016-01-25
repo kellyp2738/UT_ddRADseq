@@ -114,7 +114,7 @@ for n in range(min_ticks, (max_ticks+1)):
             # make a VCF file with only unique reads
             tempVCF = tempOutDir + '/vcf_tmp.recode.vcf' # vcftools appends .recode.vcf to the file name we used above
             tempUnique = tempOutDir + '/vcf_temp_uniqueOnly.vcf'
-            sedParseCall = "sed '/^#/ d' " + tempVCF + " | awk '!array[$1]++' > " + tempUnique
+            sedParseCall = "sed '/^##/ d' " + tempVCF + " | awk '!array[$1]++' > " + tempUnique
             subprocess.call(sedParseCall, shell=True)
     
             # extract the number of unique reads having SNPs and save as a new VCF file
