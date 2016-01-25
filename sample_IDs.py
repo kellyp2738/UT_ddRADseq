@@ -137,15 +137,15 @@ for n in range(min_ticks, (max_ticks+1)):
             # get SNP IDs from vcf file
             # convert the VCF file to a PLINK file
             # -- full file
-            fullVCF2Plink = "vcftools --vcf " + tempOutDir + "/vcf_chrom_rename_final.vcf --plink --out " + tempOutDir + "/vcf_tmp_plink"
+            fullVCF2Plink = "vcftools --vcf " + tempOutDir + "/reParsed.vcf --plink --out " + tempOutDir + "/vcf_tmp_plink"
             subprocess.call(fullVCF2Plink, shell=True)
             # -- filtered file
-            filteredVCF2Plink = "vcftools --vcf " + tempOutDir + "/vcf_temp_uniqueOnly_rename_final.vcf --plink --out " + tempOutDir + "/vcf_uniqueOnly_tmp_plink" 
+            filteredVCF2Plink = "vcftools --vcf " + tempOutDir + "/reParsedUnique.vcf --plink --out " + tempOutDir + "/vcf_uniqueOnly_tmp_plink" 
             subprocess.call(filteredVCF2Plink, shell=True)
     
             # calculate LD on the plink file
             # -- full file
-            fullPlink = "plink --file " + tempOutDir + "vcf_tmp_plink --r2 --matrix --noweb"
+            fullPlink = "plink --file " + tempOutDir + "/vcf_tmp_plink --r2 --matrix --noweb"
             subprocess.call(fullPlink, shell=True) # option A: pairwise matrix
             
             rr = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", tempOutDir, str(n), '_unfiltered'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -161,7 +161,7 @@ for n in range(min_ticks, (max_ticks+1)):
             os.remove((tempOutDir + "/plink.ld")) # delete the intermediate LD file
                         
             # -- filtered file
-            filteredPlink = "plink --file " + tempOutDir + "vcf_uniqueOnly_tmp_plink --r2 --matrix --noweb"
+            filteredPlink = "plink --file " + tempOutDir + "/vcf_uniqueOnly_tmp_plink --r2 --matrix --noweb"
             subprocess.call(filteredPlink, shell=True) # option A: pairwise matrix
             
             rr2 = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", str(n), '_filtered'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
