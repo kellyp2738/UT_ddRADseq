@@ -148,7 +148,7 @@ for n in range(min_ticks, (max_ticks+1)):
             fullPlink = "plink --file " + tempOutDir + "vcf_tmp_plink --r2 --matrix --noweb"
             subprocess.call(fullPlink, shell=True) # option A: pairwise matrix
             
-            rr = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", tempOutDir, str(n), 1], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            rr = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", tempOutDir, str(n), '_unfiltered'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
             outs, errs = rr.communicate()
             out_split = str.splitlines(outs) #out contains the print output from r (fraction 'significant', which in this context is simply greater than some R^2 threshold
             print out_split 
@@ -164,7 +164,7 @@ for n in range(min_ticks, (max_ticks+1)):
             filteredPlink = "plink --file " + tempOutDir + "vcf_uniqueOnly_tmp_plink --r2 --matrix --noweb"
             subprocess.call(filteredPlink, shell=True) # option A: pairwise matrix
             
-            rr2 = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", str(n), 2], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            rr2 = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", str(n), '_filtered'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
             outs2, errs2 = rr2.communicate()
             out_split2 = str.splitlines(outs2) #out contains the print output from r (fraction 'significant', which in this context is simply greater than some R^2 threshold
             print out_split2
