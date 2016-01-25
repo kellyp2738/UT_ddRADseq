@@ -73,8 +73,8 @@ parent=os.path.split(os.path.abspath(outfile1))[0]
     
 for n in range(min_ticks, (max_ticks+1)):
 
-    os.makedirs((parent + '/temp_' + n)) #make a directory for this sample size
-    tempOutDir = parent + '/temp_' + n
+    os.makedirs((parent + '/temp_' + str(n))) #make a directory for this sample size
+    tempOutDir = parent + '/temp_' + str(n)
     
     for j in range(1, (r+1)):
     
