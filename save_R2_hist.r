@@ -24,11 +24,11 @@ output<-data.frame(cbind(rep(n, length(ld.hist$mids)), ld.hist$mids, ld.hist$den
 names(output)<-c('n', 'mids', 'density')
 
 #file name for representative histograms
-hist.name<-file.path(paste(outfile3, '_', n, fname, sep=''))
+hist.name<-file.path(paste(outfile3, '_', fname, sep=''))
 
 # write by row
 for(row in 1:length(output[,1])){
-  write(row, file=hist.name, ncolumns=length(output[1,]), sep=',', append=T)
+  write(output[row,], file=hist.name, ncolumns=length(output[1,]), sep=',', append=T)
 }
 
 # separately record the fraction above certain thresholds
@@ -40,9 +40,9 @@ fs<-c(n, g.95, g.90, g.85, g.80)
 #print(fs) # capture fraction sig in stdout/stderr to make one big file in python
 
 #file name for r2 thresholds
-cutoffs.name<-file.path(paste(outfile2, "_", n, fname, sep=''))
+cutoffs.name<-file.path(paste(outfile2, fname, sep=''))
 
-write.csv(fs, cutoffs.name, row.names=F, append=T)
+write.csv(fs, cutoffs.name, sep=',', row.names=F, append=T)
 
 
 
