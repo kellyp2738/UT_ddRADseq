@@ -1,5 +1,9 @@
 #!python -OO
 
+## somehow when the vcf file gets changed around the column names get removed
+## this is a problem for Plink; find a way to undo it!
+## also make separate n + j directory for outputs b/c otherwise they'll overwrite each other
+
 import numpy.random as rand
 import numpy as np
 from subprocess import call, Popen, PIPE
@@ -24,9 +28,10 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--repetitions', help = 'Number of repetitions for each sample size.') 
     parser.add_argument('-i', '--input_ID_file', help = 'Full path to input ID file.')
     parser.add_argument('-v', '--input_VCF_file', help = 'Full path to input VCF file.')
-    parser.add_argument('-os', '--output_snp', help = 'Path to output SNP count file.')
-    parser.add_argument('-or', '--output_R2', help = 'Path to output fraction high R2 file.')
-    parser.add_argument('-of', '--output_R2_filtered', help = 'Path to output fraction high R2 file, filtered data.')
+    parser.add_argument('-op', '--output_parent', help = 'Full path to output directory.')
+    parser.add_argument('-os', '--output_snp', help = 'Full path to output SNP count file.')
+    parser.add_argument('-or', '--output_R2', help = 'Full path to output fraction high R2 file.')
+    parser.add_argument('-of', '--output_R2_filtered', help = 'Full path to output fraction high R2 file, filtered data.')
     parser.add_argument('-m', '--max_missing', help = 'Max-missing parameter for VCFtools.')
 
     opts = parser.parse_args()
@@ -39,35 +44,40 @@ max_ticks=int(opts.max_sample)
 r=int(opts.repetitions)
 infile_ID = opts.input_ID_file
 infile_VCF = opts.input_VCF_file
+parent = opts.output_parent
 outfile1 = opts.output_snp
 outfile2 = opts.output_R2
 outfile3 = opts.output_R2
 max_missing = opts.max_missing
 
 # what is the parent directory where the outputs should go? (if their paths aren't specified as cmd args)
-parent=os.path.split(os.path.abspath(outfile1))[0]
+# parent=os.path.split(os.path.abspath(outfile1))[0]
 
 # delete the pre-existing output file?
-if (os.path.isfile(outfile1) or os.path.isfile(outfile2) or os.path.isfile(outfile3)):
-    print outfile1
-    print outfile2
-    q = 'Overwrite existing data files named above?'
-    prompt = '[Y/n]'
-    valid = {"yes":True, "y":True, "Y":True, "Yes":True}
-    sys.stdout.write(q + prompt)
-    choice = raw_input().lower()
-    if choice in valid:
-        if os.path.isfile(outfile1):
-            os.remove(outfile1)
-        if os.path.isfile(outfile2):
-            os.remove(outfile2)
-    else:
-        print 'Please choose a different file name.'
-        quit()
+#if (os.path.isfile(outfile1) or os.path.isfile(outfile2) or os.path.isfile(outfile3)):
+#    print outfile1
+#    print outfile2
+#    q = 'Overwrite existing data files named above?'
+#    prompt = '[Y/n]'
+#    valid = {"yes":True, "y":True, "Y":True, "Yes":True}
+#    sys.stdout.write(q + prompt)
+#    choice = raw_input().lower()
+#    if choice in valid:
+#        if os.path.isfile(outfile1):
+#            os.remove(outfile1)
+#        if os.path.isfile(outfile2):
+#            os.remove(outfile2)
+#    else:
+#        print 'Please choose a different file name.'
+#        quit()
     
 for n in range(min_ticks, (max_ticks+1)):
+
+	os.makedirs((parent + '/temp_' + n)) #make a directory for this sample size
+	tempOutDir = parent + '/temp_' + n
     for j in range(1, (r+1)):
-        print 'repetition number', j        
+    
+    	print 'repetition number', j        
     
         # open the file of tick IDs that will be sampled
         id_file=open(infile_ID, 'r')
@@ -79,7 +89,7 @@ for n in range(min_ticks, (max_ticks+1)):
         print id_sample
     
         # create a temporary file for holding the tick sample IDs
-        tempFile = parent + "/temp.txt"
+        tempFile = tempOutDir + "/temp.txt"
         f=open(tempFile, 'w') # open a temp file
         for i in range(0, n):
             print 'i', i
@@ -90,7 +100,7 @@ for n in range(min_ticks, (max_ticks+1)):
             # call VCFtools with tmp.txt used as the "--keep" file
             my_env=os.environ.copy()
             # the arguments need to be fully separated for this to work (["--vcf", "/file/path/"], not ["--vcf /file/path/"])
-            tempPath = parent + "/vcf_tmp"
+            tempPath = tempOutDir + "/vcf_tmp"
             p = Popen(["vcftools", "--vcf", infile_VCF, "--keep", tempFile, "--min-meanDP", "20", "--minGQ", "25", "--maf", "0.05", "--max-missing", max_missing, "--recode", "--out", tempPath], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=my_env)
     
             # extract the number of SNPs retained
@@ -100,8 +110,8 @@ for n in range(min_ticks, (max_ticks+1)):
             snp_count = [int(s) for s in snp_line.split() if s.isdigit()][0] # split snp_line, search for integers, and save the first one found
     
             # make a VCF file with only unique reads
-            tempVCF = parent + '/vcf_tmp.recode.vcf' # vcftools appends .recode.vcf to the file name we used above
-            tempUnique = parent + '/vcf_temp_uniqueOnly.vcf'
+            tempVCF = tempOutDir + '/vcf_tmp.recode.vcf' # vcftools appends .recode.vcf to the file name we used above
+            tempUnique = tempOutDir + '/vcf_temp_uniqueOnly.vcf'
             sedParseCall = "sed '/^#/ d' " + tempVCF + " | awk '!array[$1]++' > " + tempUnique
             subprocess.call(sedParseCall, shell=True)
     
@@ -119,50 +129,24 @@ for n in range(min_ticks, (max_ticks+1)):
             final_data.close()
     
             # Plink expects human data and doesn't like chromosome numbers > 22. We don't know the chromosome structure, so replace all the chromosome names with "1"
-            
-            # first get rid of the text in the fragment ID
-            # -- full file
-            fullSedParse1 = "sed 's|_pseudoreference_pe_concatenated_without_rev_complement||g' " + tempVCF + " > " + parent + "/vcf_chrom_rename.vcf"
-            subprocess.call(fullSedParse1, shell=True)
-            # -- filtered file
-            filteredSedParse1 = "sed 's|_pseudoreference_pe_concatenated_without_rev_complement||g' " + tempUnique + " > " + parent + "/vcf_chrom_rename.vcf" 
-            subprocess.call(filteredSedParse1, shell=True)
-            
-            # second, find the fragment number and replace it with a 1
-            # -- full file
-            fullSedParse2 = "sed -r 's/^[0-9]+/1/' " + parent + '/vcf_chrom_rename.vcf' + " > " + parent + '/vcf_chrom_rename_2.vcf'
-            subprocess.call(fullSedParse2, shell=True)
-            # -- filtered file
-            filteredSedParse2 = "sed -r 's/^[0-9]+/1/' " + parent + '/vcf_temp_uniqueOnly_rename.vcf' + ' > ' + parent + '/vcf_temp_uniqueOnly_rename2.vcf'
-            subprocess.call(filteredSedParse2, shell=True)
-            
-            # now the SNP IDs are not unique... fix it with more sed and some R
-            # -- full file
-            fullSedParse3 = "sed 's|#CHROM|CHROM|' " + parent + '/vcf_chrom_rename_2.vcf' + ' > ' + parent + "/vcf_chrom_rename_3.vcf"
-            subprocess.call(fullSedParse3, shell=True)
-            fullRparse1 = "Rscript fix_vcf_pos.r " + parent + '/vcf_chrom_rename_3.vcf' + parent + '/vcf_chrom_rename_final.vcf'
-            subprocess.call(fullRparse1, shell = True) # this will replace the "POS" column in the VCF file with consecutive numbers
-            # -- filtered file
-            filteredSedParse3 = "sed 's|#CHROM|CHROM|' " + parent + '/vcf_temp_uniqueOnly_rename2.vcf' + ' > ' + parent + "/vcf_temp_uniqueOnly_rename3.vcf"
-            subprocess.call(filteredSedParse3, shell=True)
-            filteredRparse1 = "Rscript fix_vcf_pos.r " + parent + '/vcf_temp_uniqueOnly_rename3.vcf' + parent + '/vcf_temp_uniqueOnly_rename_final.vcf'
-            subprocess.call(filteredRparse1, shell = True) # this will replace the "POS" column in the VCF file with consecutive numbers
+            reParseCall = "sed '/^##/ d' " + tempVCF + " | awk '$2=NR' OFS='\t' | sed 's/1/POS/' | sed 's|_pseudoreference_pe_concatenated_without_rev_complement||g' | awk '$1=1' OFS='\t' | sed '0,/1/{s/1/#CHROM/}' > " + tempOutDir + "/reParsed.vcf"
+            reParseCallUnique = "sed '/^##/ d' " + tempUnique + " | awk '$2=NR' OFS='\t' | sed 's/1/POS/' | sed 's|_pseudoreference_pe_concatenated_without_rev_complement||g' | awk '$1=1' OFS='\t' | sed '0,/1/{s/1/#CHROM/}' > " + tempOutDir + "/reParsedUnique.vcf"
             
             # get SNP IDs from vcf file
             # convert the VCF file to a PLINK file
             # -- full file
-            fullVCF2Plink = "vcftools --vcf " + parent + "/vcf_chrom_rename_final.vcf --plink --out " + parent + "/vcf_tmp_plink"
+            fullVCF2Plink = "vcftools --vcf " + tempOutDir + "/vcf_chrom_rename_final.vcf --plink --out " + tempOutDir + "/vcf_tmp_plink"
             subprocess.call(fullVCF2Plink, shell=True)
             # -- filtered file
-            filteredVCF2Plink = "vcftools --vcf " + parent + "/vcf_temp_uniqueOnly_rename_final.vcf --plink --out " + parent + "/vcf_uniqueOnly_tmp_plink" 
+            filteredVCF2Plink = "vcftools --vcf " + tempOutDir + "/vcf_temp_uniqueOnly_rename_final.vcf --plink --out " + tempOutDir + "/vcf_uniqueOnly_tmp_plink" 
             subprocess.call(filteredVCF2Plink, shell=True)
     
             # calculate LD on the plink file
             # -- full file
-            fullPlink = "plink --file " + parent + "vcf_tmp_plink --r2 --matrix --noweb"
+            fullPlink = "plink --file " + tempOutDir + "vcf_tmp_plink --r2 --matrix --noweb"
             subprocess.call(fullPlink, shell=True) # option A: pairwise matrix
             
-            rr = Popen(["Rscript", "save_R2_hist.r", parent, str(n), 1], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            rr = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", tempOutDir, str(n), 1], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
             outs, errs = rr.communicate()
             out_split = str.splitlines(outs) #out contains the print output from r (fraction 'significant', which in this context is simply greater than some R^2 threshold
             print out_split 
@@ -172,13 +156,13 @@ for n in range(min_ticks, (max_ticks+1)):
                 r2Writer = csv.writer(c, delimiter=",")
                 r2Writer.writerow(outss)
                 
-            os.remove((parent + "/plink.ld")) # delete the intermediate LD file
+            os.remove((tempOutDir + "/plink.ld")) # delete the intermediate LD file
                         
             # -- filtered file
-            filteredPlink = "plink --file " + parent + "vcf_uniqueOnly_tmp_plink --r2 --matrix --noweb"
+            filteredPlink = "plink --file " + tempOutDir + "vcf_uniqueOnly_tmp_plink --r2 --matrix --noweb"
             subprocess.call(filteredPlink, shell=True) # option A: pairwise matrix
             
-            rr2 = Popen(["Rscript", "save_R2_hist.r", str(n), 2], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            rr2 = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", str(n), 2], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
             outs2, errs2 = rr2.communicate()
             out_split2 = str.splitlines(outs2) #out contains the print output from r (fraction 'significant', which in this context is simply greater than some R^2 threshold
             print out_split2
@@ -187,15 +171,47 @@ for n in range(min_ticks, (max_ticks+1)):
             with open(outfile3, 'a') as d: # open in append mode
                 r2Writer = csv.writer(d, delimiter=",")
                 r2Writer.writerow(outss2)
-                
-            os.remove((parent + "/plink.ld")) # delete the intermediate LD file
         
+        #remove the temp files for that repetition
+        files = glob.glob(tempOutDir)
+		for f in files:
+    		os.remove(f)        
+      
 '''
 # this bash one-liner will strip the header off a vcf file, look at column 1, generate a frequency table of read IDs, and count the number of lines
 # the number of lines = the number of unique reads. the 'sort' part is NOT optional 
 sed '/^#/ d' qualFilteredOnly.vcf.recode.vcf | awk -F '\t' '{print $1}' | sort | uniq -c | wc -l
 '''
 
-
+''' OLD PARSING STUFF
+# first get rid of the text in the fragment ID
+            # -- full file
+            fullSedParse1 = "sed 's|_pseudoreference_pe_concatenated_without_rev_complement||g' " + tempVCF + " > " + tempOutDir + "/vcf_chrom_rename.vcf"
+            subprocess.call(fullSedParse1, shell=True)
+            # -- filtered file
+            filteredSedParse1 = "sed 's|_pseudoreference_pe_concatenated_without_rev_complement||g' " + tempUnique + " > " + tempOutDir + "/vcf_temp_uniqueOnly_rename.vcf" 
+            subprocess.call(filteredSedParse1, shell=True)
+            
+            # second, find the fragment number and replace it with a 1
+            # -- full file
+            fullSedParse2 = "sed -r 's/^[0-9]+/1/' " + tempOutDir + '/vcf_chrom_rename.vcf' + " > " + tempOutDir + '/vcf_chrom_rename_2.vcf'
+            subprocess.call(fullSedParse2, shell=True)
+            # -- filtered file
+            filteredSedParse2 = "sed -r 's/^[0-9]+/1/' " + tempOutDir + '/vcf_temp_uniqueOnly_rename.vcf' + ' > ' + tempOutDir + '/vcf_temp_uniqueOnly_rename2.vcf'
+            subprocess.call(filteredSedParse2, shell=True)
+            
+            # now the SNP IDs are not unique... fix it with more sed and some R
+            # -- full file
+            fullSedParse3 = "sed 's|#CHROM|CHROM|' " + tempOutDir + '/vcf_chrom_rename_2.vcf' + ' > ' + tempOutDir + "/vcf_chrom_rename_3.vcf"
+            subprocess.call(fullSedParse3, shell=True)
+            fullRparse1 = "Rscript /home1/02540/kellypie/UT_ddRADseq/fix_vcf_pos.r " + tempOutDir + '/vcf_chrom_rename_3.vcf' + tempOutDir + '/vcf_chrom_rename_final.vcf'
+            subprocess.call(fullRparse1, shell = True) # this will replace the "POS" column in the VCF file with consecutive numbers
+            # -- filtered file
+            filteredSedParse3 = "sed 's|#CHROM|CHROM|' " + tempOutDir + '/vcf_temp_uniqueOnly_rename2.vcf' + ' > ' + tempOutDir + "/vcf_temp_uniqueOnly_rename3.vcf"
+            subprocess.call(filteredSedParse3, shell=True)
+            filteredRparse1 = "Rscript /home1/02540/kellypie/UT_ddRADseq/fix_vcf_pos.r " + tempOutDir + '/vcf_temp_uniqueOnly_rename3.vcf' + tempOutDir + '/vcf_temp_uniqueOnly_rename_final.vcf'
+            subprocess.call(filteredRparse1, shell = True) # this will replace the "POS" column in the VCF file with consecutive numbers
+            
+'''
 
 
