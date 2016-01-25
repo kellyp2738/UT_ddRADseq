@@ -220,4 +220,4 @@ sed '/^#/ d' qualFilteredOnly.vcf.recode.vcf | awk -F '\t' '{print $1}' | sort |
             r2Writer = csv.writer(d, delimiter=",")
             r2Writer.writerow(outss2)
             
-
+'''
