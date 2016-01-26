@@ -26,6 +26,9 @@ output<-data.frame(cbind(rep(n, length(ld.hist$mids)), ld.hist$mids, ld.hist$den
 hist.name<-file.path(paste(outfile3, '_', fname, sep=''))
 if(file.exists(hist.name)){
   old<-read.csv(hist.name)
+  old<-data.frame(old)
+  old<-unname(old)
+  fsr<-unname(output)
   out2<-rbind(old, output)
   write.csv(out2, hist.name, row.names=F)
 }else{
@@ -47,6 +50,9 @@ fsr<-data.frame(fs)
 cutoffs.name<-file.path(paste(outfile2, fname, sep=''))
 if(file.exists(cutoffs.name)){
   old<-read.csv(cutoffs.name)
+  old<-data.frame(old)
+  old<-unname(old)
+  fsr<-unname(fsr)
   out2<-rbind(old, fsr)
   write.csv(out2, cutoffs.name, row.names=F)
 }else{
