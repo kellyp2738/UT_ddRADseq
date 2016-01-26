@@ -30,7 +30,7 @@ if(file.exists(hist.name)){
   write.csv(out2, hist.name, row.names=F)
 }else{
   names(output)<-c('n', 'mids', 'density')
-  write.csv(output, cutoffs.name, row.names=F)
+  write.csv(output, hist.name, row.names=F)
 }
 
 # separately record the fraction above certain thresholds
