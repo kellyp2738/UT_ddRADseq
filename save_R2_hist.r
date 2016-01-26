@@ -54,10 +54,10 @@ if(file.exists(cutoffs.name)){
   old<-unname(old)
   fsr<-unname(fsr)
   out2<-rbind(old, fsr)
-  write.csv(out2, cutoffs.name, row.names=F)
+  write.table(out2, cutoffs.name, row.names=F, col.names=F)
 }else{
   #names(fsr)<-c('n', '95', '90', '85', '80')
-  write.csv(fsr, cutoffs.name, row.names=F)
+  write.table(fsr, cutoffs.name, row.names=F, col.names=F)
 }
 
 #out2 = file(cutoffs.name, 'a')
