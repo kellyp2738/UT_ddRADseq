@@ -21,14 +21,17 @@ ld.u<-ld.u[complete.cases(ld.u)]
 ld.hist<-hist(ld.u, breaks=seq(0,1,0.05), plot=F)
 #prepare for saving
 output<-data.frame(cbind(rep(n, length(ld.hist$mids)), ld.hist$mids, ld.hist$density))
-names(output)<-c('n', 'mids', 'density')
 
 #file name for representative histograms
 hist.name<-file.path(paste(outfile3, '_', fname, sep=''))
-out = file(hist.name, 'a')
-
-# write by row
-write.table(output, file=out, sep=',', row.names=F, append=T)
+if(file.exists(hist.name)){
+  old<-read.csv(hist.name)
+  out2<-rbind(old, output)
+  write.csv(out2, hist.name, row.names=F)
+}else{
+  names(output)<-c('n', 'mids', 'density')
+  write.csv(output, cutoffs.name, row.names=F)
+}
 
 # separately record the fraction above certain thresholds
 g.95<-length(ld.u[ld.u>0.95])/length(ld.u)
@@ -36,14 +39,22 @@ g.90<-length(ld.u[ld.u>0.9])/length(ld.u)
 g.85<-length(ld.u[ld.u>0.85])/length(ld.u)
 g.80<-length(ld.u[ld.u>0.8])/length(ld.u)
 fs<-c(n, g.95, g.90, g.85, g.80)
-fsr<-rbind(fs)
+fsr<-data.frame(fs)
 #print(fs) # capture fraction sig in stdout/stderr to make one big file in python
 
 #file name for r2 thresholds
 cutoffs.name<-file.path(paste(outfile2, fname, sep=''))
+if(file.exists(cutoffs.name)){
+  old<-read.csv(cutoffs.name)
+  out2<-rbind(old, fsr)
+  write.csv(out2, cutoffs.name, row.names=F)
+}else{
+  names(fsr)<-c('n', '95', '90', '85', '80')
+  write.csv(t(fsr), cutoffs.name, row.names=F)
+}
 
-out2 = file(cutoffs.name, 'a')
-write.table(fsr, out2, sep=',', row.names=F, append=T)
+#out2 = file(cutoffs.name, 'a')
+#write.table(fsr, out2, sep=',', row.names=F, append=T)
 
 
 
