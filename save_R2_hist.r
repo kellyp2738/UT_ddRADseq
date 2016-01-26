@@ -38,7 +38,8 @@ g.95<-length(ld.u[ld.u>0.95])/length(ld.u)
 g.90<-length(ld.u[ld.u>0.9])/length(ld.u)
 g.85<-length(ld.u[ld.u>0.85])/length(ld.u)
 g.80<-length(ld.u[ld.u>0.8])/length(ld.u)
-fs<-c(n, g.95, g.90, g.85, g.80)
+fs<-paste(n, g.95, g.90, g.85, g.80, sep=',')
+print(fs)
 fsr<-data.frame(fs)
 #print(fs) # capture fraction sig in stdout/stderr to make one big file in python
 
@@ -49,8 +50,8 @@ if(file.exists(cutoffs.name)){
   out2<-rbind(old, fsr)
   write.csv(out2, cutoffs.name, row.names=F)
 }else{
-  names(fsr)<-c('n', '95', '90', '85', '80')
-  write.csv(t(fsr), cutoffs.name, row.names=F)
+  #names(fsr)<-c('n', '95', '90', '85', '80')
+  write.csv(fsr, cutoffs.name, row.names=F)
 }
 
 #out2 = file(cutoffs.name, 'a')
