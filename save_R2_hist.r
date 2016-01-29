@@ -32,8 +32,8 @@ if(file.exists(hist.name)){
   out2<-rbind(old, output)
   write.csv(out2, hist.name, row.names=F)
 }else{
-  names(output)<-c('n', 'mids', 'density')
-  write.csv(output, hist.name, row.names=F, eol=',')
+  output.mat<-matrix(data=output, nrow=1, ncol=length(output))
+  write.csv(output, hist.name, row.names=F)
 }
 
 # separately record the fraction above certain thresholds
@@ -57,7 +57,8 @@ if(file.exists(cutoffs.name)){
   write.table(out2, cutoffs.name, row.names=F, col.names=F)
 }else{
   #names(fsr)<-c('n', '95', '90', '85', '80')
-  write.csv(fsr, cutoffs.name, row.names=F, col.names=F, eol=',')
+  fsr.mat<-matrix(data=fsr, nrow=1, ncol=length(fsr))
+  write.csv(fsr.mat, cutoffs.name, row.names=F, col.names=F, eol=',')
 }
 
 #out2 = file(cutoffs.name, 'a')
