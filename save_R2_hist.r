@@ -32,8 +32,7 @@ if(file.exists(hist.name)){
   out2<-rbind(old, output)
   write.csv(out2, hist.name, row.names=F)
 }else{
-  output.mat<-matrix(data=output, nrow=1, ncol=length(output))
-  write.csv(output.mat, hist.name, row.names=F)
+  write.csv(output, hist.name, row.names=F)
 }
 
 # separately record the fraction above certain thresholds
