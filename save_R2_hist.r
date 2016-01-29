@@ -24,22 +24,27 @@ output<-data.frame(cbind(rep(n, length(ld.hist$mids)), ld.hist$mids, ld.hist$den
 
 #file name for representative histograms
 hist.name<-file.path(paste(outfile3, '_', fname, sep=''))
-if(file.exists(hist.name)){
-  sink(hist.name, append=TRUE) #open file connection
+fileConn <- open(hist.name, "w+")
+capture.output(output, file=fileConn)
+close(fileConn)
+
+#if(file.exists(hist.name)){
+  
+  #sink(hist.name, append=TRUE) #open file connection
   #old<-read.csv(hist.name)
   #old<-data.frame(old)
   #old<-unname(old)
   #fsr<-unname(output)
   #out2<-rbind(old, output)
-  cat(output)
-  sink()
+  #cat(output)
+  #sink()
   #write.csv(out2, hist.name, row.names=F)
-}else{
-  sink(hist.name) #open file connection
-  cat(output) #write to file
-  sink() #close file connection
+#}else{
+#  sink(hist.name) #open file connection
+#  cat(output) #write to file
+#  sink() #close file connection
   #write.csv(output, hist.name, row.names=F)
-}
+#}
 
 # separately record the fraction above certain thresholds
 g.95<-length(ld.u[ld.u>0.95])/length(ld.u)
@@ -51,24 +56,29 @@ fs<-c(n, g.95, g.90, g.85, g.80)
 
 #file name for r2 thresholds
 cutoffs.name<-file.path(paste(outfile2, fname, sep=''))
-if(file.exists(cutoffs.name)){
+fs.mat<-matrix(fs, nrow=1, ncol=length(fsr))
+fileConn2 <- open(cutoffs.name, "w+")
+capture.output(fs.mat, file=fileConn2)
+close(fileConn2)
+
+#if(file.exists(cutoffs.name)){
   #old<-read.csv(cutoffs.name)
   #old<-data.frame(old)
-  sink(cutoffs.name, append=TRUE) #open file connection
+  #sink(cutoffs.name, append=TRUE) #open file connection
   #old<-unname(old)
   #fsr<-unname(fs)
-  fs.mat<-matrix(fsr, nrow=1, ncol=length(fsr))
+  #fs.mat<-matrix(fsr, nrow=1, ncol=length(fsr))
   #out2<-rbind(old, fs.mat)
   #write.table(out2, cutoffs.name, row.names=F)
-  cat(fs.mat) #write to file
-  sink() #close file connection
-}else{
-  sink(cutoffs.name) #open file connection
-  fs.mat<-matrix(data=fs, nrow=1, ncol=length(fs))
-  cat(fs.mat) #write to file
-  sink() #close file connection
+  #cat(fs.mat) #write to file
+  #sink() #close file connection
+#}else{
+  #sink(cutoffs.name) #open file connection
+  #fs.mat<-matrix(data=fs, nrow=1, ncol=length(fs))
+  #cat(fs.mat) #write to file
+  #sink() #close file connection
   #write.csv(fs.mat, cutoffs.name, row.names=F)
-}
+#}
 
 #out2 = file(cutoffs.name, 'a')
 #write.table(fsr, out2, sep=',', row.names=F, append=T)
