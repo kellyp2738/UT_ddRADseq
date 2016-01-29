@@ -25,14 +25,20 @@ output<-data.frame(cbind(rep(n, length(ld.hist$mids)), ld.hist$mids, ld.hist$den
 #file name for representative histograms
 hist.name<-file.path(paste(outfile3, '_', fname, sep=''))
 if(file.exists(hist.name)){
-  old<-read.csv(hist.name)
+  sink(hist.name, append=TRUE) #open file connection
+  #old<-read.csv(hist.name)
   #old<-data.frame(old)
-  old<-unname(old)
-  fsr<-unname(output)
-  out2<-rbind(old, output)
-  write.csv(out2, hist.name, row.names=F)
+  #old<-unname(old)
+  #fsr<-unname(output)
+  #out2<-rbind(old, output)
+  cat(output)
+  sink()
+  #write.csv(out2, hist.name, row.names=F)
 }else{
-  write.csv(output, hist.name, row.names=F)
+  sink(hist.name) #open file connection
+  cat(output) #write to file
+  sink() #close file connection
+  #write.csv(output, hist.name, row.names=F)
 }
 
 # separately record the fraction above certain thresholds
@@ -46,17 +52,22 @@ fs<-c(n, g.95, g.90, g.85, g.80)
 #file name for r2 thresholds
 cutoffs.name<-file.path(paste(outfile2, fname, sep=''))
 if(file.exists(cutoffs.name)){
-  old<-read.csv(cutoffs.name)
+  #old<-read.csv(cutoffs.name)
   #old<-data.frame(old)
-  old<-unname(old)
-  fsr<-unname(fs)
-  fs.mat<-matrix(fsr, nrow=1)
-  out2<-rbind(old, fs.mat)
-  write.table(out2, cutoffs.name, row.names=F)
+  sink(cutoffs.name, append=TRUE) #open file connection
+  #old<-unname(old)
+  #fsr<-unname(fs)
+  fs.mat<-matrix(fsr, nrow=1, ncol=length(fsr))
+  #out2<-rbind(old, fs.mat)
+  #write.table(out2, cutoffs.name, row.names=F)
+  cat(fs.mat) #write to file
+  sink() #close file connection
 }else{
-  #names(fsr)<-c('n', '95', '90', '85', '80')
+  sink(cutoffs.name) #open file connection
   fs.mat<-matrix(data=fs, nrow=1, ncol=length(fs))
-  write.csv(fs.mat, cutoffs.name, row.names=F)
+  cat(fs.mat) #write to file
+  sink() #close file connection
+  #write.csv(fs.mat, cutoffs.name, row.names=F)
 }
 
 #out2 = file(cutoffs.name, 'a')
