@@ -24,7 +24,7 @@ output<-data.frame(cbind(rep(n, length(ld.hist$mids)), ld.hist$mids, ld.hist$den
 
 #file name for representative histograms
 hist.name<-file.path(paste(outfile3, '_', fname, sep=''))
-fileConn <- open(hist.name, "w+")
+fileConn <- file(hist.name, "w+")
 capture.output(output, file=fileConn)
 close(fileConn)
 
@@ -57,7 +57,7 @@ fs<-c(n, g.95, g.90, g.85, g.80)
 #file name for r2 thresholds
 cutoffs.name<-file.path(paste(outfile2, fname, sep=''))
 fs.mat<-matrix(fs, nrow=1, ncol=length(fsr))
-fileConn2 <- open(cutoffs.name, "w+")
+fileConn2 <- file(cutoffs.name, "w+")
 capture.output(fs.mat, file=fileConn2)
 close(fileConn2)
 
