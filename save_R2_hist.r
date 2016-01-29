@@ -33,7 +33,7 @@ if(file.exists(hist.name)){
   write.csv(out2, hist.name, row.names=F)
 }else{
   output.mat<-matrix(data=output, nrow=1, ncol=length(output))
-  write.csv(output, hist.name, row.names=F)
+  write.csv(output.mat, hist.name, row.names=F)
 }
 
 # separately record the fraction above certain thresholds
@@ -41,9 +41,7 @@ g.95<-length(ld.u[ld.u>0.95])/length(ld.u)
 g.90<-length(ld.u[ld.u>0.9])/length(ld.u)
 g.85<-length(ld.u[ld.u>0.85])/length(ld.u)
 g.80<-length(ld.u[ld.u>0.8])/length(ld.u)
-fs<-paste(n, g.95, g.90, g.85, g.80, sep=',')
-print(fs)
-fsr<-data.frame(fs)
+fs<-c(n, g.95, g.90, g.85, g.80)
 #print(fs) # capture fraction sig in stdout/stderr to make one big file in python
 
 #file name for r2 thresholds
@@ -52,13 +50,13 @@ if(file.exists(cutoffs.name)){
   old<-read.csv(cutoffs.name)
   old<-data.frame(old)
   old<-unname(old)
-  fsr<-unname(fsr)
+  fsr<-unname(fs)
   out2<-rbind(old, fsr)
-  write.table(out2, cutoffs.name, row.names=F, col.names=F)
+  write.table(out2, cutoffs.name, row.names=F)
 }else{
   #names(fsr)<-c('n', '95', '90', '85', '80')
-  fsr.mat<-matrix(data=fsr, nrow=1, ncol=length(fsr))
-  write.csv(fsr.mat, cutoffs.name, row.names=F, col.names=F, eol=',')
+  fs.mat<-matrix(data=fs, nrow=1, ncol=length(fs))
+  write.csv(fs.mat, cutoffs.name, row.names=F)
 }
 
 #out2 = file(cutoffs.name, 'a')
