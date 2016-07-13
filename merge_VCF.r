@@ -13,7 +13,12 @@ raccSRT<-read.table('~/Desktop/UT_ddRADseq/July2016_qualFilteredOnly_uniqueOnly_
 # each read is only represented once in the data set, so no need to check for duplicate reads
 shared.sites.hierarchical<-intersect(intersect(opHB[,1], opSRT[,1]), intersect(raccHB[,1], raccSRT[,1]))
 length(shared.sites.hierarchical)
-write.table(shared.sites.hierarchical, file='~/Desktop/UT_ddRADseq/July2016_four_subpopulations_qualFilteredOnly_uniqueOnly_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25.vcf', quote=FALSE, col.names=FALSE, row.names=FALSE)
+
+# read in the original data file. each site (read) will only occur once, so we just need to get the subset of this data file that matches the shared.sites.hierarchical list made above
+full.data<-read.table('~/Desktop/UT_ddRADseq/July2016_qualFilteredOnly_uniqueOnly_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25.recode.vcf', comment.char="", header=TRUE)
+keep.data<-full.data[which(full.data[,1] %in% shared.sites.hierarchical),]
+
+write.table(keep.data, file='~/Desktop/UT_ddRADseq/July2016_four_subpopulations_qualFilteredOnly_uniqueOnly_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25.vcf', quote=FALSE, col.names=FALSE, row.names=FALSE)
 
 
 # below is old; ignore
