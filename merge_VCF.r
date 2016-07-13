@@ -2,6 +2,21 @@
 ## Merge the VCF files created by filtering at the lowest level of data organization (site by species) #
 ########################################################################################################
 
+#Updated July 2016
+
+# filtering params accidentally duplicated in name but were only done once.
+opHB<-read.table('~/Desktop/UT_ddRADseq/July2016_qualFilteredOnly_uniqueOnly_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25_op_HB.recode.vcf', comment.char="", header=TRUE)
+opSRT<-read.table('~/Desktop/UT_ddRADseq/July2016_qualFilteredOnly_uniqueOnly_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25_op_SRT.recode.vcf', comment.char="", header=TRUE)
+raccHB<-read.table('~/Desktop/UT_ddRADseq/July2016_qualFilteredOnly_uniqueOnly_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25_racc_HB.recode.vcf', comment.char="", header=TRUE)
+raccSRT<-read.table('~/Desktop/UT_ddRADseq/July2016_qualFilteredOnly_uniqueOnly_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25_racc_SRT.recode.vcf', comment.char="", header=TRUE)
+
+# each read is only represented once in the data set, so no need to check for duplicate reads
+shared.sites.hierarchical<-intersect(intersect(opHB[,1], opSRT[,1]), intersect(raccHB[,1], raccSRT[,1]))
+length(shared.sites.hierarchical)
+write.table(shared.sites.hierarchical, file='~/Desktop/UT_ddRADseq/July2016_four_subpopulations_qualFilteredOnly_uniqueOnly_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25.vcf', quote=FALSE, col.names=FALSE, row.names=FALSE)
+
+
+# below is old; ignore
 #################################
 # Load and process the VCF data #
 #################################
