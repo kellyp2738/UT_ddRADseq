@@ -28,6 +28,13 @@ keep.subset<-function(data, column.idx){
   }
 }
 
+# master keep file (remove poor quality samples; retain duplicates)
+write.table(full.data$combo.label, file='~/Desktop/UT_ddRADseq/keep_master_with_duplicates.txt', row.names=FALSE, col.names=FALSE, quote=FALSE)
+
+# separate all four subpopulations -- HB-op, HB-racc, SRT-op, SRT-racc
+keep.subset(full.data, 11)
+
+### old; ignore
 # separate Harrison Bayou and Starr Ranch Trail
 keep.subset(full.data, 6)
 
@@ -45,5 +52,4 @@ keep.subset(full.data.update, 10)
 # separate HB individual hosts
 keep.subset(subset(full.data, coll.site=='HB'), 5)
 
-# separate all four subpopulations -- HB-op, HB-racc, SRT-op, SRT-racc
-keep.subset(full.data, 11)
+
