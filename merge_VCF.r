@@ -17,8 +17,9 @@ length(shared.sites.hierarchical)
 # read in the original data file. each site (read) will only occur once, so we just need to get the subset of this data file that matches the shared.sites.hierarchical list made above
 full.data<-read.table('~/Desktop/UT_ddRADseq/July2016_qualFilteredOnly_uniqueOnly_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25.recode.vcf', comment.char="", header=TRUE)
 keep.data<-full.data[which(full.data[,1] %in% shared.sites.hierarchical),]
-
-write.table(keep.data, file='~/Desktop/UT_ddRADseq/July2016_four_subpopulations_qualFilteredOnly_uniqueOnly_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25.vcf', quote=FALSE, col.names=FALSE, row.names=FALSE)
+names(keep.data)<-sub('\\.', '-', names(keep.data))
+names(keep.data)[1]<-'#CHROM'
+write.table(keep.data, file='~/Desktop/UT_ddRADseq/July2016_four_subpopulations_qualFilteredOnly_uniqueOnly_maf0.05_maxmissing_0.75_minmeanDP20_minGQ25.vcf', quote=FALSE, row.names=FALSE, sep="\t")
 
 
 # below is old; ignore
