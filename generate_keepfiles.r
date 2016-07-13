@@ -9,6 +9,7 @@ sample.data<-read.csv("~/Desktop/UT_ddRADseq/ddRAD_FinalLibrary_SampleInfo.csv")
 # reconstruct the combinatoric label used in the VCF file
 combo.label<-paste(sample.data$tick.id, '_', sample.data$Inline.Barcode, '-', sample.data$Illumina.Barcode, sep='')
 full.data<-cbind(sample.data, combo.label)
+full.data$host.site<-paste(full.data$host.species, full.data$coll.site, sep='-')
 write.csv(full.data, file='~/Desktop/UT_ddRADseq/ddRAD_FinalLibrary_SampleInfo_Full.csv', row.names=FALSE)
 
 ## RUN AS NEEDED
@@ -43,3 +44,6 @@ keep.subset(full.data.update, 10)
 
 # separate HB individual hosts
 keep.subset(subset(full.data, coll.site=='HB'), 5)
+
+# separate all four subpopulations -- HB-op, HB-racc, SRT-op, SRT-racc
+keep.subset(full.data, 11)
