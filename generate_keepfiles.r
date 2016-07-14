@@ -4,7 +4,7 @@
 
 ## RUN ONLY ONCE ##
 # read in the data
-sample.data<-read.csv("~/Desktop/UT_ddRADseq/ddRAD_FinalLibrary_SampleInfo.csv")
+sample.data<-read.csv("~/Desktop/UT_ddRADseq/ddRAD_FinalLibrary_SampleInfo_Full.csv")
 
 # reconstruct the combinatoric label used in the VCF file
 combo.label<-paste(sample.data$tick.id, '_', sample.data$Inline.Barcode, '-', sample.data$Illumina.Barcode, sep='')
