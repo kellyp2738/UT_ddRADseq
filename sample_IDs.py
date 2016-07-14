@@ -135,6 +135,9 @@ for n in range(min_ticks, (max_ticks+1)):
         #rr = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", plinkResults, outfile2, outfile3, str(n), '_unfiltered'], shell=True, universal_newlines=True) 
         rr = "Rscript /home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r " + plinkResults + ' ' + outfile2 + ' ' + outfile3 + ' ' + str(n) + ' ' + '_unfiltered'
         subprocess.call(rr, shell=True) 
+        # use 'cat' to join files created over multiple runs
+        # output capture in the R script will insert header rows with each run
+        # however, those extra header rows will be ignored when loading the complete data into R for plotting
         
         os.remove((tempOutDir + "/plink.ld")) # delete the intermediate LD file
                     
@@ -144,6 +147,7 @@ for n in range(min_ticks, (max_ticks+1)):
         #rr2 = Popen(["Rscript", "/home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r", plinkResults, outfile2, outfile3, str(n), '_filtered'], shell=True, universal_newlines=True)
         rr2 = "Rscript /home1/02540/kellypie/UT_ddRADseq/save_R2_hist.r " + plinkResults + ' ' + outfile2 + ' ' + outfile3 + ' ' + str(n) + ' ' + '_filtered'
         subprocess.call(rr2, shell=True)
+		# use 
 
         #remove the temp files for that repetition
         files = glob.glob((tempOutDir+'/*'))
