@@ -2,6 +2,30 @@
 ## Merge the VCF files created by filtering at the lowest level of data organization (site by species) #
 ########################################################################################################
 
+#Updated July 2016
+
+# filtering params accidentally duplicated in name but were only done once.
+opHB<-read.table('~/Desktop/UT_ddRADseq/July2016_pseudoref_mapped_genotypes_noHeader_qualFiltered_minmeanDP20_minGQ25_uniqueOnly_maf0.05_op_HB.recode.vcf', comment.char="", header=TRUE)
+opSRT<-read.table('~/Desktop/UT_ddRADseq/July2016_pseudoref_mapped_genotypes_noHeader_qualFiltered_minmeanDP20_minGQ25_uniqueOnly_maf0.05_op_SRT.recode.vcf', comment.char="", header=TRUE)
+raccHB<-read.table('~/Desktop/UT_ddRADseq/July2016_pseudoref_mapped_genotypes_noHeader_qualFiltered_minmeanDP20_minGQ25_uniqueOnly_maf0.05_racc_HB.recode.vcf', comment.char="", header=TRUE)
+raccSRT<-read.table('~/Desktop/UT_ddRADseq/July2016_pseudoref_mapped_genotypes_noHeader_qualFiltered_minmeanDP20_minGQ25_uniqueOnly_maf0.05_racc_SRT.recode.vcf', comment.char="", header=TRUE)
+
+# each read is only represented once in the data set, so no need to check for duplicate reads
+shared.sites.hierarchical<-intersect(intersect(opHB[,1], opSRT[,1]), intersect(raccHB[,1], raccSRT[,1]))
+length(shared.sites.hierarchical)
+
+# read in the full (filtered) data. each site will only occur once, so we just need to get the subset of this data file that matches the shared.sites.hierarchical list made above
+full.data<-read.table('~/Desktop/UT_ddRADseq/July2016_pseudoref_mapped_genotypes_noHeader_qualFiltered_minmeanDP20_minGQ25_uniqueOnly_maf0.05.vcf.recode.vcf', comment.char="", header=TRUE)
+keep.data<-full.data[which(full.data[,1] %in% shared.sites.hierarchical),]
+names(keep.data)<-sub('\\.', '-', names(keep.data))
+names(keep.data)[1]<-'#CHROM'
+write.table(keep.data, file='~/Desktop/UT_ddRADseq/July2016_pseudoref_mapped_genotypes_noHeader_qualFiltered_minmeanDP20_minGQ25_uniqueOnly_maf0.05_maxmissing0.75_within4subpop.vcf', quote=FALSE, row.names=FALSE, sep="\t")
+
+sample.names<-names(keep.data)[10:length(names(keep.data))]
+names.only<-sub('\\_.*', '', sample.names)
+sort(table(names.only)) # R15T1, R15T3, R9T2 and R9T3 are replicated
+
+# below is old; ignore
 #################################
 # Load and process the VCF data #
 #################################

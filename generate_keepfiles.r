@@ -4,11 +4,12 @@
 
 ## RUN ONLY ONCE ##
 # read in the data
-sample.data<-read.csv("~/Desktop/UT_ddRADseq/ddRAD_FinalLibrary_SampleInfo.csv")
+sample.data<-read.csv("~/Desktop/UT_ddRADseq/ddRAD_FinalLibrary_SampleInfo_Full.csv")
 
 # reconstruct the combinatoric label used in the VCF file
 combo.label<-paste(sample.data$tick.id, '_', sample.data$Inline.Barcode, '-', sample.data$Illumina.Barcode, sep='')
 full.data<-cbind(sample.data, combo.label)
+full.data$host.site<-paste(full.data$host.species, full.data$coll.site, sep='-')
 write.csv(full.data, file='~/Desktop/UT_ddRADseq/ddRAD_FinalLibrary_SampleInfo_Full.csv', row.names=FALSE)
 
 ## RUN AS NEEDED
@@ -27,6 +28,13 @@ keep.subset<-function(data, column.idx){
   }
 }
 
+# master keep file (remove poor quality samples; retain duplicates)
+write.table(full.data$combo.label, file='~/Desktop/UT_ddRADseq/keep_master_with_duplicates.txt', row.names=FALSE, col.names=FALSE, quote=FALSE)
+
+# separate all four subpopulations -- HB-op, HB-racc, SRT-op, SRT-racc
+keep.subset(full.data, 11)
+
+### old; ignore
 # separate Harrison Bayou and Starr Ranch Trail
 keep.subset(full.data, 6)
 
@@ -43,3 +51,5 @@ keep.subset(full.data.update, 10)
 
 # separate HB individual hosts
 keep.subset(subset(full.data, coll.site=='HB'), 5)
+
+
